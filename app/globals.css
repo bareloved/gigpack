@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Musician-friendly light theme - warm, inviting */
+    --background: 45 20% 97%;
+    --foreground: 20 14% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14% 12%;
+    
+    /* Amber/Orange accent - stage lights & gig posters */
+    --primary: 38 92% 50%;
+    --primary-foreground: 20 14% 4%;
+    
+    --secondary: 45 20% 93%;
+    --secondary-foreground: 20 14% 12%;
+    --muted: 45 15% 94%;
+    --muted-foreground: 25 10% 45%;
+    
+    /* Teal accent for supporting elements */
+    --accent: 174 72% 56%;
+    --accent-foreground: 20 14% 4%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 45 15% 88%;
+    --input: 45 15% 88%;
+    --ring: 38 92% 50%;
+    --radius: 0.75rem;
+    
+    /* Custom gig-specific colors */
+    --gig-highlight: 38 92% 50%;
+    --gig-muted: 45 12% 82%;
+  }
+
+  .dark {
+    /* Deep charcoal background for low-light venues */
+    --background: 222 20% 10%;
+    --foreground: 45 20% 96%;
+    --card: 222 18% 14%;
+    --card-foreground: 45 20% 96%;
+    --popover: 222 18% 14%;
+    --popover-foreground: 45 20% 96%;
+    
+    /* Vibrant amber for dark mode - pops without being neon */
+    --primary: 38 92% 55%;
+    --primary-foreground: 20 14% 4%;
+    
+    --secondary: 222 18% 20%;
+    --secondary-foreground: 45 20% 96%;
+    --muted: 222 16% 22%;
+    --muted-foreground: 45 10% 62%;
+    
+    /* Teal accent in dark mode */
+    --accent: 174 72% 56%;
+    --accent-foreground: 20 14% 4%;
+    
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 16% 24%;
+    --input: 222 16% 24%;
+    --ring: 38 92% 55%;
+    
+    /* Custom gig-specific colors for dark mode */
+    --gig-highlight: 38 92% 55%;
+    --gig-muted: 222 12% 32%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  
+  /* Enhanced typography for musician vibe */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+}
+
+/* Gig-specific utilities */
+@layer utilities {
+  .gig-card {
+    @apply rounded-xl border-2 bg-card shadow-sm transition-all duration-200;
+  }
+  
+  .gig-card:hover {
+    @apply shadow-lg scale-[1.02] border-primary/30;
+  }
+  
+  .date-pill {
+    @apply inline-flex items-center rounded-lg bg-primary/10 px-3 py-1.5 text-sm font-semibold text-primary border border-primary/20;
+  }
+  
+  .section-divider {
+    @apply border-t-2 border-dashed border-border my-6;
+  }
+  
+  .gig-section-header {
+    @apply text-xs uppercase tracking-wider font-bold text-muted-foreground mb-3 flex items-center gap-2;
+  }
+
+  /* Hand-drawn accent utilities */
+  .hand-drawn-hover {
+    @apply relative cursor-pointer transition-colors duration-200;
+  }
+
+  .hand-drawn-hover::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .hand-drawn-hover:hover::after {
+    opacity: 1;
+  }
+
+  /* Subtle wiggle animation for hand-drawn elements */
+  @keyframes wiggle {
+    0%, 100% {
+      transform: rotate(-0.5deg);
+    }
+    50% {
+      transform: rotate(0.5deg);
+    }
+  }
+
+  .hand-drawn-wiggle {
+    animation: wiggle 3s ease-in-out infinite;
+  }
+
+  /* Floating animation for decorative elements */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    33% {
+      transform: translateY(-3px) rotate(1deg);
+    }
+    66% {
+      transform: translateY(2px) rotate(-1deg);
+    }
+  }
+
+  .hand-drawn-float {
+    animation: float 6s ease-in-out infinite;
+  }
+}
+
