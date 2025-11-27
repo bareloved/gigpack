@@ -2,7 +2,6 @@
 
 import { GigPack } from "@/lib/types";
 import { Clock, MapPin, Shirt, Package, ExternalLink, PlayCircle, Disc3 } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PackingChecklist } from "@/components/packing-checklist";
@@ -11,6 +10,7 @@ interface RehearsalViewProps {
   gigPack: Omit<GigPack, "internal_notes" | "owner_id">;
   openMaps: () => void;
   slug: string;
+  locale?: string;
 }
 
 /**
@@ -26,11 +26,7 @@ interface RehearsalViewProps {
  * - Single-column, focused layout
  * - Works across all themes
  */
-export function RehearsalView({ gigPack, openMaps, slug }: RehearsalViewProps) {
-  const locale = useLocale();
-  const t = useTranslations("public");
-  const tCommon = useTranslations("common");
-  const tGigpack = useTranslations("gigpack");
+export function RehearsalView({ gigPack, openMaps, slug, locale = "en" }: RehearsalViewProps) {
   const accentColor = gigPack.accent_color || "hsl(var(--primary))";
 
   return (
@@ -67,7 +63,7 @@ export function RehearsalView({ gigPack, openMaps, slug }: RehearsalViewProps) {
           {gigPack.date && (
             <div className="text-center">
               <div className="text-lg md:text-xl text-muted-foreground uppercase tracking-wider font-semibold mb-2">
-                {tGigpack("date")}
+                Date
               </div>
               <div className="text-3xl md:text-5xl font-bold" style={{ color: accentColor }}>
                 {formatDate(gigPack.date, locale)}
@@ -82,7 +78,7 @@ export function RehearsalView({ gigPack, openMaps, slug }: RehearsalViewProps) {
                 <div className="bg-muted/50 border-2 rounded-xl p-6 md:p-8 text-center">
                   <div className="flex items-center justify-center gap-2 text-sm md:text-base text-muted-foreground uppercase tracking-wider font-semibold mb-3">
                     <Clock className="h-5 w-5 md:h-6 md:w-6" />
-                    <span>{t("callTime")}</span>
+                    <span>Call Time</span>
                   </div>
                   <div className="text-4xl md:text-6xl font-bold tabular-nums" style={{ color: accentColor }}>
                     {gigPack.call_time}
@@ -93,7 +89,7 @@ export function RehearsalView({ gigPack, openMaps, slug }: RehearsalViewProps) {
                 <div className="bg-muted/50 border-2 rounded-xl p-6 md:p-8 text-center">
                   <div className="flex items-center justify-center gap-2 text-sm md:text-base text-muted-foreground uppercase tracking-wider font-semibold mb-3">
                     <Clock className="h-5 w-5 md:h-6 md:w-6" />
-                    <span>{t("onStage")}</span>
+                    <span>On Stage</span>
                   </div>
                   <div className="text-4xl md:text-6xl font-bold tabular-nums" style={{ color: accentColor }}>
                     {gigPack.on_stage_time}
@@ -108,7 +104,7 @@ export function RehearsalView({ gigPack, openMaps, slug }: RehearsalViewProps) {
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 text-sm md:text-base text-muted-foreground mb-2">
                 <MapPin className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="uppercase tracking-wider font-semibold">{t("venue")}</span>
+                <span className="uppercase tracking-wider font-semibold">Venue</span>
               </div>
               <div className="text-xl md:text-2xl font-semibold">{gigPack.venue_name}</div>
               {gigPack.venue_address && (
@@ -123,7 +119,7 @@ export function RehearsalView({ gigPack, openMaps, slug }: RehearsalViewProps) {
                   style={{ borderColor: accentColor, color: accentColor }}
                 >
                   <MapPin className="mr-2 h-5 w-5" />
-                  {tCommon("openInMaps")}
+                  Open in Maps
                 </Button>
               )}
             </div>
@@ -135,7 +131,7 @@ export function RehearsalView({ gigPack, openMaps, slug }: RehearsalViewProps) {
           <div className="mb-8 md:mb-12">
             <div className="text-center mb-6 md:mb-8">
               <div className="inline-block px-6 py-3 rounded-full text-lg md:text-xl uppercase tracking-wider font-bold border-2" style={{ borderColor: accentColor, color: accentColor, backgroundColor: accentColor + '10' }}>
-                {t("setlist")}
+                Setlist
               </div>
             </div>
 
@@ -167,7 +163,7 @@ export function RehearsalView({ gigPack, openMaps, slug }: RehearsalViewProps) {
         {(gigPack.dress_code || gigPack.backline_notes) && (
           <div className="space-y-6">
             <div className="text-center text-lg md:text-xl text-muted-foreground uppercase tracking-wider font-semibold mb-4">
-              {t("essentialInfo")}
+              Essential Info
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 md:gap-6">
@@ -175,7 +171,7 @@ export function RehearsalView({ gigPack, openMaps, slug }: RehearsalViewProps) {
                 <div className="bg-muted/50 border rounded-xl p-5 md:p-6">
                   <div className="flex items-center gap-2 text-sm md:text-base uppercase tracking-wider font-semibold text-muted-foreground mb-3">
                     <Shirt className="h-5 w-5" />
-                    <span>{t("dressCode")}</span>
+                    <span>Dress Code</span>
                   </div>
                   <p className="text-lg md:text-2xl font-medium">{gigPack.dress_code}</p>
                 </div>
@@ -184,7 +180,7 @@ export function RehearsalView({ gigPack, openMaps, slug }: RehearsalViewProps) {
                 <div className="bg-muted/50 border rounded-xl p-5 md:p-6">
                   <div className="flex items-center gap-2 text-sm md:text-base uppercase tracking-wider font-semibold text-muted-foreground mb-3">
                     <Package className="h-5 w-5" />
-                    <span>{t("backline")}</span>
+                    <span>Gear</span>
                   </div>
                   <p className="text-base md:text-xl font-medium whitespace-pre-wrap leading-relaxed">{gigPack.backline_notes}</p>
                 </div>

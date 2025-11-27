@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { GigPack, GigPackTheme } from "@/lib/types";
 import { RefreshCw, Eye } from "lucide-react";
@@ -16,12 +15,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 interface PublicGigPackViewProps {
   initialGigPack: Omit<GigPack, "internal_notes" | "owner_id">;
   slug: string;
+  locale?: string;
 }
 
-export function PublicGigPackView({ initialGigPack, slug }: PublicGigPackViewProps) {
-  const locale = useLocale();
+export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: PublicGigPackViewProps) {
   const searchParams = useSearchParams();
-  const t = useTranslations("public");
   const [gigPack, setGigPack] = useState(initialGigPack);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isChecking, setIsChecking] = useState(false);
@@ -124,7 +122,7 @@ export function PublicGigPackView({ initialGigPack, slug }: PublicGigPackViewPro
         return <SocialCardLayout gigPack={gigPack} openMaps={openMaps} slug={slug} />;
       case "minimal":
       default:
-        return <MinimalLayout gigPack={gigPack} openMaps={openMaps} slug={slug} />;
+        return <MinimalLayout gigPack={gigPack} openMaps={openMaps} slug={slug} locale={locale} />;
     }
   };
 
@@ -132,7 +130,7 @@ export function PublicGigPackView({ initialGigPack, slug }: PublicGigPackViewPro
     <TooltipProvider>
       {/* Render either Rehearsal View or normal theme layout */}
       {isRehearsalMode ? (
-        <RehearsalView gigPack={gigPack} openMaps={openMaps} slug={slug} />
+        <RehearsalView gigPack={gigPack} openMaps={openMaps} slug={slug} locale={locale} />
       ) : (
         renderThemeLayout()
       )}
@@ -155,12 +153,12 @@ export function PublicGigPackView({ initialGigPack, slug }: PublicGigPackViewPro
                     : 'text-muted-foreground'
                 }`} 
               />
-              <span className="sr-only">{t("rehearsalMode")}</span>
+              <span className="sr-only">Rehearsal Mode</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p className="font-semibold">{t("rehearsalMode")}</p>
-            <p className="text-xs text-muted-foreground">{t("stageOptimizedView")}</p>
+            <p className="font-semibold">Rehearsal Mode</p>
+            <p className="text-xs text-muted-foreground">Stage-optimized view</p>
           </TooltipContent>
         </Tooltip>
         

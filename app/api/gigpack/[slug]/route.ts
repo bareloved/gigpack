@@ -10,6 +10,15 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    // Check if service role key is configured
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("SUPABASE_SERVICE_ROLE_KEY is not configured");
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
     const supabase = createServiceClient();
     const { slug } = await params;
 
@@ -20,7 +29,15 @@ export async function GET(
       .eq("is_archived", false)
       .single();
 
-    if (error || !gigPack) {
+    if (error) {
+      console.error("Supabase error fetching gig pack:", error.message, error.code);
+      return NextResponse.json(
+        { error: "Gig pack not found" },
+        { status: 404 }
+      );
+    }
+
+    if (!gigPack) {
       return NextResponse.json(
         { error: "Gig pack not found" },
         { status: 404 }

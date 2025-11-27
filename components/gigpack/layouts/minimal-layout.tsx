@@ -1,6 +1,5 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
 import { GigPack } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ interface MinimalLayoutProps {
   gigPack: Omit<GigPack, "internal_notes" | "owner_id">;
   openMaps: () => void;
   slug: string;
+  locale?: string;
 }
 
 /**
@@ -20,11 +20,7 @@ interface MinimalLayoutProps {
  * Clean, modern design with lots of whitespace and subtle accents
  * Supports branding: logo, hero image, accent color, poster skin
  */
-export function MinimalLayout({ gigPack, openMaps, slug }: MinimalLayoutProps) {
-  const locale = useLocale();
-  const t = useTranslations("public");
-  const tGigpack = useTranslations("gigpack");
-  const tCommon = useTranslations("common");
+export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: MinimalLayoutProps) {
   
   // Get branding values with fallbacks
   const accentColor = gigPack.accent_color || null;
@@ -99,13 +95,13 @@ export function MinimalLayout({ gigPack, openMaps, slug }: MinimalLayoutProps) {
                     {gigPack.call_time && (
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4" />
-                        <span>{tGigpack("call")}: {gigPack.call_time}</span>
+                        <span>Call: {gigPack.call_time}</span>
                       </div>
                     )}
                     {gigPack.on_stage_time && (
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4" />
-                        <span>{tGigpack("onStage")}: {gigPack.on_stage_time}</span>
+                        <span>On Stage: {gigPack.on_stage_time}</span>
                       </div>
                     )}
                   </div>
@@ -118,7 +114,7 @@ export function MinimalLayout({ gigPack, openMaps, slug }: MinimalLayoutProps) {
               <div className="space-y-3 pt-6 border-t" style={accentColor ? { borderColor: accentColor + '40' } : {}}>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wider font-semibold" style={accentColor ? { color: accentColor } : {}}>
                   <MapPin className="h-4 w-4" />
-                  <span>{t("venue")}</span>
+                  <span>Venue</span>
                 </div>
                 <div className="space-y-2">
                   {gigPack.venue_name && (
@@ -136,7 +132,7 @@ export function MinimalLayout({ gigPack, openMaps, slug }: MinimalLayoutProps) {
                       style={accentColor ? { borderColor: accentColor, color: accentColor } : {}}
                     >
                       <MapPin className="mr-2 h-4 w-4" />
-                      {tCommon("openInMaps")}
+                      Open in Maps
                     </Button>
                   )}
                 </div>
@@ -148,7 +144,7 @@ export function MinimalLayout({ gigPack, openMaps, slug }: MinimalLayoutProps) {
               <div className="space-y-4 pt-6 border-t" style={accentColor ? { borderColor: accentColor + '40' } : {}}>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wider font-semibold" style={accentColor ? { color: accentColor } : {}}>
                   <Users className="h-4 w-4" />
-                  <span>{t("whosPlaying")}</span>
+                  <span>Who&apos;s Playing</span>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   {gigPack.lineup.map((member, index) => (
@@ -171,7 +167,7 @@ export function MinimalLayout({ gigPack, openMaps, slug }: MinimalLayoutProps) {
               <div className="space-y-4 pt-6 border-t" style={accentColor ? { borderColor: accentColor + '40' } : {}}>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wider font-semibold" style={accentColor ? { color: accentColor } : {}}>
                   <Music className="h-4 w-4" />
-                  <span>{t("setlist")}</span>
+                  <span>Setlist</span>
                 </div>
                 <div className="bg-muted/30 border rounded-lg p-6">
                   {/* Structured setlist takes priority */}
@@ -214,7 +210,7 @@ export function MinimalLayout({ gigPack, openMaps, slug }: MinimalLayoutProps) {
                     <div className="p-4 border rounded-lg">
                       <div className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
                         <Shirt className="h-3.5 w-3.5" />
-                        {t("dressCode")}
+                        Dress Code
                       </div>
                       <p className="text-sm">{gigPack.dress_code}</p>
                     </div>
@@ -223,7 +219,7 @@ export function MinimalLayout({ gigPack, openMaps, slug }: MinimalLayoutProps) {
                     <div className="p-4 border rounded-lg">
                       <div className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
                         <Package className="h-3.5 w-3.5" />
-                        {t("backline")}
+                        Gear
                       </div>
                       <p className="text-sm whitespace-pre-wrap">{gigPack.backline_notes}</p>
                     </div>
@@ -232,7 +228,7 @@ export function MinimalLayout({ gigPack, openMaps, slug }: MinimalLayoutProps) {
                     <div className="p-4 border rounded-lg">
                       <div className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
                         <ParkingCircle className="h-3.5 w-3.5" />
-                        {t("parking")}
+                        Parking
                       </div>
                       <p className="text-sm whitespace-pre-wrap">{gigPack.parking_notes}</p>
                     </div>
@@ -241,7 +237,7 @@ export function MinimalLayout({ gigPack, openMaps, slug }: MinimalLayoutProps) {
                     <div className="p-4 border rounded-lg">
                       <div className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
                         <DollarSign className="h-3.5 w-3.5" />
-                        {t("payment")}
+                        Payment
                       </div>
                       <p className="text-sm whitespace-pre-wrap">{gigPack.payment_notes}</p>
                     </div>

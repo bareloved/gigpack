@@ -40,23 +40,25 @@ export default function SignUpPage() {
           description: error.message,
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 
-      // Navigate immediately for faster UX
-      router.push("/gigpacks");
-      
+      // Show toast immediately for feedback, then navigate
       toast({
         title: "Welcome to GigPack!",
         description: "Let's pack your first gig",
       });
+      
+      // Replace instead of push so user can't go back to sign-up
+      // Keep isLoading true during navigation to prevent flicker
+      router.replace("/gigpacks");
     } catch {
       toast({
         title: "Oops",
         description: "Something went wrong",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };

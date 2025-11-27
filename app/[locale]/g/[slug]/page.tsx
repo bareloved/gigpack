@@ -1,4 +1,5 @@
 import { PublicGigPackView } from "@/components/public-gigpack-view";
+import { createServiceClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 
 interface PublicGigPackPageProps {
@@ -9,20 +10,26 @@ interface PublicGigPackPageProps {
 }
 
 async function getGigPack(slug: string) {
-  // Build base URL with proper precedence
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL 
-    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-  
   try {
-    const res = await fetch(`${baseUrl}/api/gigpack/${slug}`, {
-      cache: "no-store",
-    });
+    // Fetch directly from Supabase to avoid self-fetch timeout on Vercel
+    const supabase = createServiceClient();
+    
+    const { data: gigPack, error } = await supabase
+      .from("gig_packs")
+      .select("*")
+      .eq("public_slug", slug)
+      .eq("is_archived", false)
+      .single();
 
-    if (!res.ok) {
+    if (error || !gigPack) {
       return null;
     }
 
-    return res.json();
+    // Remove internal notes and owner_id from the public response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { internal_notes, owner_id, ...publicGigPack } = gigPack;
+    
+    return publicGigPack;
   } catch (error) {
     console.error("Error fetching gig pack:", error);
     return null;
@@ -30,14 +37,14 @@ async function getGigPack(slug: string) {
 }
 
 export default async function PublicGigPackPage({ params }: PublicGigPackPageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const gigPack = await getGigPack(slug);
 
   if (!gigPack) {
     notFound();
   }
 
-  return <PublicGigPackView initialGigPack={gigPack} slug={slug} />;
+  return <PublicGigPackView initialGigPack={gigPack} slug={slug} locale={locale} />;
 }
 
 export const dynamic = "force-dynamic";

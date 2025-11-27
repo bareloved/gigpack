@@ -36,23 +36,25 @@ export default function SignInPage() {
           description: error.message,
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 
-      // Navigate immediately for faster UX
-      router.push("/gigpacks");
-      
+      // Show toast immediately for feedback, then navigate
       toast({
         title: t("welcomeBack"),
         description: t("welcomeBackDescription"),
       });
+      
+      // Replace instead of push so user can't go back to sign-in
+      // Keep isLoading true during navigation to prevent flicker
+      router.replace("/gigpacks");
     } catch {
       toast({
         title: t("error"),
         description: t("unexpectedError"),
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
