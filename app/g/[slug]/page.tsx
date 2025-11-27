@@ -8,9 +8,9 @@ interface PublicGigPackPageProps {
 }
 
 async function getGigPack(slug: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-                  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                  "http://localhost:3000";
+  // Build base URL with proper precedence
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL 
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
   
   try {
     const res = await fetch(`${baseUrl}/api/gigpack/${slug}`, {

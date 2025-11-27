@@ -9,11 +9,13 @@ const intlMiddleware = createIntlMiddleware(routing);
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
-  // Skip i18n middleware for API routes, static files, and public routes
+  // Skip i18n middleware for API routes, static files, and public gig pages
+  // Public gig pages (/g/slug) should work without locale prefix
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon.ico")
+    pathname.startsWith("/favicon.ico") ||
+    pathname.startsWith("/g/")
   ) {
     return NextResponse.next();
   }
