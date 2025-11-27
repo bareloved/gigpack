@@ -48,12 +48,12 @@ export default function SignUpPage() {
       
       toast({
         title: "Welcome to GigPack!",
-        description: "Let's create your first gig pack",
+        description: "Let's pack your first gig",
       });
     } catch {
       toast({
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: "Oops",
+        description: "Something went wrong",
         variant: "destructive",
       });
     } finally {
@@ -67,7 +67,7 @@ export default function SignUpPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-3xl font-bold text-center">GigPack</CardTitle>
           <CardDescription className="text-center">
-            Create an account to start sharing gig packs
+            Create an account to start packing gigs
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSignUp}>

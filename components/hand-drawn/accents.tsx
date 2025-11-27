@@ -1,10 +1,13 @@
 "use client";
 
-import { SVGProps, useState, useEffect } from "react";
+import { SVGProps, useId } from "react";
 
 /**
  * Hand-drawn SVG accent components for artistic, DIY aesthetic
  * Each component has multiple path variations for organic, non-repetitive look
+ * 
+ * Uses useId() to create deterministic variation based on component instance.
+ * This avoids hydration mismatches while still providing visual variety.
  */
 
 interface HandDrawnProps extends SVGProps<SVGSVGElement> {
@@ -12,17 +15,24 @@ interface HandDrawnProps extends SVGProps<SVGSVGElement> {
   color?: string;
 }
 
+// Helper to get a stable variation index from React's useId
+function useStableVariation(maxVariations: number): number {
+  const id = useId();
+  // Hash the id string to get a number
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 5) - hash) + id.charCodeAt(i);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash) % maxVariations;
+}
+
 /**
  * Hand-drawn squiggle line - replaces straight line accents
  * Used in section headers
  */
 export function HandDrawnSquiggle({ className = "", color = "currentColor", ...props }: HandDrawnProps) {
-  // Use state to avoid hydration mismatch - starts with 0, randomizes on client mount
-  const [variation, setVariation] = useState(0);
-  
-  useEffect(() => {
-    setVariation(Math.floor(Math.random() * 4));
-  }, []);
+  const variation = useStableVariation(4);
   
   const paths = [
     // Variation 1: wavy squiggle
@@ -60,11 +70,7 @@ export function HandDrawnSquiggle({ className = "", color = "currentColor", ...p
  * Hand-drawn arrow - points to important elements
  */
 export function HandDrawnArrow({ className = "", color = "currentColor", ...props }: HandDrawnProps) {
-  const [variation, setVariation] = useState(0);
-  
-  useEffect(() => {
-    setVariation(Math.floor(Math.random() * 3));
-  }, []);
+  const variation = useStableVariation(3);
   
   const paths = [
     // Variation 1: curved arrow
@@ -100,11 +106,7 @@ export function HandDrawnArrow({ className = "", color = "currentColor", ...prop
  * Hand-drawn underline - appears on hover for links
  */
 export function HandDrawnUnderline({ className = "", color = "currentColor", width = "100%", ...props }: HandDrawnProps & { width?: string | number }) {
-  const [variation, setVariation] = useState(0);
-  
-  useEffect(() => {
-    setVariation(Math.floor(Math.random() * 3));
-  }, []);
+  const variation = useStableVariation(3);
   
   const paths = [
     // Variation 1: wavy underline
@@ -142,11 +144,7 @@ export function HandDrawnUnderline({ className = "", color = "currentColor", wid
  * Hand-drawn corner bracket - decorates card corners
  */
 export function HandDrawnCornerBracket({ className = "", color = "currentColor", ...props }: HandDrawnProps) {
-  const [variation, setVariation] = useState(0);
-  
-  useEffect(() => {
-    setVariation(Math.floor(Math.random() * 3));
-  }, []);
+  const variation = useStableVariation(3);
   
   const paths = [
     // Variation 1: curved L bracket
@@ -187,11 +185,7 @@ export function HandDrawnCircle({
   children,
   ...props 
 }: HandDrawnProps & { children?: React.ReactNode }) {
-  const [variation, setVariation] = useState(0);
-  
-  useEffect(() => {
-    setVariation(Math.floor(Math.random() * 4));
-  }, []);
+  const variation = useStableVariation(4);
   
   const paths = [
     // Variation 1: slightly egg-shaped
@@ -241,11 +235,7 @@ export function HandDrawnCircle({
  * Hand-drawn star - decorative accent
  */
 export function HandDrawnStar({ className = "", color = "currentColor", ...props }: HandDrawnProps) {
-  const [variation, setVariation] = useState(0);
-  
-  useEffect(() => {
-    setVariation(Math.floor(Math.random() * 3));
-  }, []);
+  const variation = useStableVariation(3);
   
   const paths = [
     // Variation 1: classic 5-point star
@@ -283,11 +273,7 @@ export function HandDrawnStar({ className = "", color = "currentColor", ...props
  * Hand-drawn doodle - various small decorative elements
  */
 export function HandDrawnDoodle({ className = "", color = "currentColor", type = "sparkle", ...props }: HandDrawnProps & { type?: "sparkle" | "note" | "heart" }) {
-  const [variation, setVariation] = useState(0);
-  
-  useEffect(() => {
-    setVariation(Math.floor(Math.random() * 2));
-  }, []);
+  const variation = useStableVariation(2);
   
   const sparkles = [
     "M12,2 L13,11 L12,12 L11,11 Z M2,12 L11,13 L12,12 L11,11 Z M12,22 L13,13 L12,12 L11,13 Z M22,12 L13,13 L12,12 L13,11 Z",

@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
-import { useLocale } from "next-intl";
-import { rtlLocales } from "@/i18n/config";
+import { rtlLocales, Locale } from "@/i18n/config";
 
 interface LocaleHtmlAttributesProps {
   locale: string;
 }
 
 export function LocaleHtmlAttributes({ locale }: LocaleHtmlAttributesProps) {
-  const isRtl = rtlLocales.includes(locale as any);
+  const isRtl = rtlLocales.includes(locale as Locale);
 
   useEffect(() => {
     // Set lang and dir attributes on the html element immediately

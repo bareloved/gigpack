@@ -1,13 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Edit, Link as LinkIcon, Music, Clock, Trash2 } from "lucide-react";
+import { Calendar, MapPin, Edit, Music, Clock, Trash2, Share2 } from "lucide-react";
 import Link from "next/link";
-import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
 import { HoverUnderline } from "@/components/hand-drawn/hover-underline";
+import { GigPackShareDialog } from "@/components/gigpack-share-dialog";
 
 interface GigPackListProps {
   gigPacks: {
@@ -18,6 +19,7 @@ interface GigPackListProps {
     call_time: string | null;
     venue_name: string | null;
     public_slug: string;
+    gig_mood?: string | null;
   }[];
   onEdit?: (gigPackId: string) => void;
   onCreate?: () => void;
@@ -25,27 +27,14 @@ interface GigPackListProps {
 }
 
 export function GigPackList({ gigPacks, onEdit, onCreate, onDelete }: GigPackListProps) {
-  const { toast } = useToast();
   const locale = useLocale();
   const t = useTranslations("dashboard");
   const tCommon = useTranslations("common");
   const tGigpack = useTranslations("gigpack");
-
-  const copyPublicLink = (slug: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const url = `${window.location.origin}/g/${slug}`;
-    
-    // Copy immediately
-    navigator.clipboard.writeText(url);
-    
-    // Instant toast without waiting
-    toast({
-      title: tCommon("copied"),
-      description: tCommon("linkReady"),
-      duration: 2000,
-    });
-  };
+  const tShare = useTranslations("share");
+  
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [selectedGigPack, setSelectedGigPack] = useState<typeof gigPacks[0] | null>(null);
 
   const handleDelete = (packId: string, packTitle: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -58,6 +47,13 @@ export function GigPackList({ gigPacks, onEdit, onCreate, onDelete }: GigPackLis
     if (onDelete) {
       onDelete(packId);
     }
+  };
+
+  const handleShare = (pack: typeof gigPacks[0], e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedGigPack(pack);
+    setShareDialogOpen(true);
   };
 
   if (gigPacks.length === 0) {
@@ -95,8 +91,9 @@ export function GigPackList({ gigPacks, onEdit, onCreate, onDelete }: GigPackLis
   }
 
   return (
-    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-      {gigPacks.map((pack) => (
+    <>
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {gigPacks.map((pack) => (
         <Card key={pack.id} className="gig-card group">
           <CardContent className="p-6 space-y-4">
             {/* Gig Title */}
@@ -115,6 +112,12 @@ export function GigPackList({ gigPacks, onEdit, onCreate, onDelete }: GigPackLis
                 <p className="text-base text-muted-foreground font-medium">
                   {pack.band_name}
                 </p>
+              )}
+              {/* Mood Tag */}
+              {pack.gig_mood && (
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary border border-primary/20">
+                  {pack.gig_mood}
+                </span>
               )}
             </div>
 
@@ -175,10 +178,10 @@ export function GigPackList({ gigPacks, onEdit, onCreate, onDelete }: GigPackLis
                 variant="outline"
                 size="sm"
                 className="flex-1 font-semibold"
-                onClick={(e) => copyPublicLink(pack.public_slug, e)}
+                onClick={(e) => handleShare(pack, e)}
               >
-                <LinkIcon className="mr-1.5 h-3.5 w-3.5" />
-                {tGigpack("copy")}
+                <Share2 className="mr-1.5 h-3.5 w-3.5" />
+                {tShare("shareButton")}
               </Button>
               {onDelete && (
                 <Button
@@ -193,8 +196,18 @@ export function GigPackList({ gigPacks, onEdit, onCreate, onDelete }: GigPackLis
             </div>
           </CardContent>
         </Card>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      {selectedGigPack && (
+        <GigPackShareDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          gigPack={selectedGigPack}
+          locale={locale}
+        />
+      )}
+    </>
   );
 }
 

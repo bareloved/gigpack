@@ -169,5 +169,68 @@
   .hand-drawn-float {
     animation: float 6s ease-in-out infinite;
   }
+
+  /* Band logo display styles */
+  .band-logo {
+    @apply max-w-[120px] max-h-[80px] object-contain;
+  }
+
+  .band-logo-small {
+    @apply max-w-[80px] max-h-[60px] object-contain;
+  }
+
+  /* Hero image container styles */
+  .hero-image-container {
+    @apply relative w-full overflow-hidden;
+  }
+
+  .hero-image {
+    @apply w-full h-full object-cover;
+  }
+
+  /* Overlay for hero images to ensure text readability */
+  .hero-overlay {
+    @apply absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50;
+  }
+
+  .dark .hero-overlay {
+    @apply from-black/60 via-black/50 to-black/70;
+  }
+}
+
+/* ==========================================================================
+   POSTER SKIN STYLES
+   Applied to full page background for maximum effect
+   ========================================================================== */
+
+/* Clean skin: Simple, solid background (default) */
+.poster-skin-clean {
+  background-color: hsl(var(--background));
+}
+
+/* Paper skin: Warm cream/aged paper look */
+.poster-skin-paper {
+  background-color: hsl(45, 35%, 93%);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+.dark .poster-skin-paper {
+  background-color: hsl(30, 15%, 15%);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.12'/%3E%3C/svg%3E");
+}
+
+/* Grain skin: Strong vintage film grain effect */
+.poster-skin-grain {
+  background-color: hsl(40, 25%, 90%);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.2'/%3E%3C/svg%3E");
+}
+
+.dark .poster-skin-grain {
+  background-color: hsl(220, 12%, 12%);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.25'/%3E%3C/svg%3E");
 }
 

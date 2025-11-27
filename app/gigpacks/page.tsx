@@ -46,7 +46,7 @@ export default async function GigPacksPage({ searchParams }: GigPacksPageProps) 
   const { data: gigPacks } = await supabase
     .from("gig_packs")
     .select(
-      "id, title, band_name, date, call_time, venue_name, public_slug, updated_at, created_at",
+      "id, title, band_name, date, call_time, venue_name, public_slug, updated_at, created_at, gig_mood",
     )
     .eq("is_archived", false)
     .order("date", { ascending: true, nullsFirst: false })

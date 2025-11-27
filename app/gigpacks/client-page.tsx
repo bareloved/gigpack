@@ -6,7 +6,7 @@ import { GigPackList } from "@/components/gigpack-list";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2 } from "lucide-react";
 import { HandDrawnSquiggle, HandDrawnStar } from "@/components/hand-drawn/accents";
-import { GigPackForm } from "@/components/gigpack-form";
+import { GigPackForm, GigPackFormInitialValues } from "@/components/gigpack-form";
 import {
   Sheet,
   SheetContent,
@@ -17,6 +17,8 @@ import {
 import type { GigPack } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
+import { GigPackTemplateChooser } from "@/components/gigpack-template-chooser";
+import { GigPackTemplate, applyTemplateToFormDefaults } from "@/lib/gigpackTemplates";
 
 export type GigPackListItem = {
   id: string;
@@ -28,6 +30,7 @@ export type GigPackListItem = {
   public_slug: string;
   updated_at: string;
   created_at: string;
+  gig_mood: string | null;
 };
 
 export type GigPackSheetState =
@@ -61,6 +64,7 @@ const toListItem = (pack: GigPack): GigPackListItem => ({
   public_slug: pack.public_slug,
   updated_at: pack.updated_at,
   created_at: pack.created_at,
+  gig_mood: pack.gig_mood,
 });
 
 export function GigPacksClientPage({
@@ -81,11 +85,16 @@ export function GigPacksClientPage({
   const [isSheetLoading, setIsSheetLoading] = useState(
     initialSheetState?.mode === "edit" && !initialEditingGigPack,
   );
+  
+  // Template chooser state
+  const [templateChooserOpen, setTemplateChooserOpen] = useState(false);
+  const [formInitialValues, setFormInitialValues] = useState<GigPackFormInitialValues | undefined>(undefined);
 
   const closeSheet = useCallback(() => {
     setActiveSheet(null);
     setEditingGigPack(null);
     setIsSheetLoading(false);
+    setFormInitialValues(undefined);
   }, []);
 
   const loadGigPack = useCallback(
@@ -99,8 +108,8 @@ export function GigPacksClientPage({
 
       if (error || !data) {
         toast({
-          title: "Unable to load Gig Pack",
-          description: "Please try again",
+          title: "Couldn't load this gig",
+          description: "Try again in a sec",
           variant: "destructive",
         });
         closeSheet();
@@ -119,7 +128,22 @@ export function GigPacksClientPage({
   }, [initialSheetState]);
 
   const openCreateSheet = () => {
+    console.log('Opening template chooser...');
     setEditingGigPack(null);
+    setFormInitialValues(undefined);
+    setTemplateChooserOpen(true);
+  };
+
+  const handleSelectBlank = () => {
+    setTemplateChooserOpen(false);
+    setFormInitialValues(undefined);
+    setActiveSheet({ mode: "create" });
+  };
+
+  const handleSelectTemplate = (template: GigPackTemplate) => {
+    setTemplateChooserOpen(false);
+    const initialValues = applyTemplateToFormDefaults(template);
+    setFormInitialValues(initialValues);
     setActiveSheet({ mode: "create" });
   };
 
@@ -164,8 +188,8 @@ export function GigPacksClientPage({
 
       if (error) {
         toast({
-          title: "Error",
-          description: "Failed to delete gig pack",
+          title: "Oops",
+          description: "Couldn't delete",
           variant: "destructive",
         });
         return;
@@ -173,8 +197,8 @@ export function GigPacksClientPage({
 
       setGigPacks((prev) => prev.filter((pack) => pack.id !== gigPackId));
       toast({
-        title: "✓ Deleted",
-        description: "Gig pack removed",
+        title: "✓ Gone",
+        description: "Gig removed",
         duration: 2000,
       });
     },
@@ -198,10 +222,10 @@ export function GigPacksClientPage({
               <HandDrawnStar className="text-primary/30 absolute -bottom-1 -right-10 w-3 h-3 hand-drawn-float" style={{ animationDelay: '2s' }} />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              GigPack Dashboard
+              Your gigs
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
-              Create shareable gig pages for your bandmates—everything they need in one place.
+              Pack all the details your bandmates need—times, setlist, venue, who&apos;s playing—into one shareable page.
             </p>
           </div>
           <Button 
@@ -210,7 +234,7 @@ export function GigPacksClientPage({
             className="sm:w-auto shadow-lg hover:shadow-xl transition-shadow"
           >
             <Plus className="mr-2 h-5 w-5" />
-            Create GigPack
+            Pack a new gig
           </Button>
         </div>
 
@@ -235,7 +259,7 @@ export function GigPacksClientPage({
             <div className="flex items-center gap-3">
               <HandDrawnSquiggle className="text-primary" />
               <SheetTitle className="text-3xl">
-                {isEditMode ? "Edit GigPack" : "Create GigPack"}
+                {isEditMode ? "Edit gig" : "Pack a gig"}
               </SheetTitle>
             </div>
             {isEditMode && editingGigPack && (
@@ -250,8 +274,8 @@ export function GigPacksClientPage({
             )}
             <SheetDescription className="text-base">
               {isEditMode
-                ? "Make updates and save without leaving the dashboard."
-                : "Fill in the details to create a new gig pack for your band."}
+                ? "Update details and save right here."
+                : "Fill in what the band needs to know."}
             </SheetDescription>
           </SheetHeader>
 
@@ -272,6 +296,7 @@ export function GigPacksClientPage({
               )
             ) : (
               <GigPackForm
+                initialValues={formInitialValues}
                 onCancel={closeSheet}
                 onCreateSuccess={handleCreateSuccess}
               />
@@ -279,6 +304,13 @@ export function GigPacksClientPage({
           </div>
         </SheetContent>
       </Sheet>
+
+      <GigPackTemplateChooser
+        open={templateChooserOpen}
+        onOpenChange={setTemplateChooserOpen}
+        onSelectBlank={handleSelectBlank}
+        onSelectTemplate={handleSelectTemplate}
+      />
     </>
   );
 }
@@ -287,7 +319,7 @@ function SheetLoadingState() {
   return (
     <div className="flex h-64 flex-col items-center justify-center text-muted-foreground">
       <Loader2 className="mb-4 h-6 w-6 animate-spin" />
-      Loading gig pack...
+      Loading...
     </div>
   );
 }

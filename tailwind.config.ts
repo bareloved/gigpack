@@ -8,6 +8,12 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // Safelist ensures dynamically-generated classes aren't purged
+  safelist: [
+    "poster-skin-clean",
+    "poster-skin-paper",
+    "poster-skin-grain",
+  ],
   theme: {
     extend: {
       colors: {

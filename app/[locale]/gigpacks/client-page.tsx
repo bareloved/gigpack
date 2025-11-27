@@ -29,6 +29,7 @@ export type GigPackListItem = {
   public_slug: string;
   updated_at: string;
   created_at: string;
+  gig_mood: string | null;
 };
 
 export type GigPackSheetState =
@@ -62,6 +63,7 @@ const toListItem = (pack: GigPack): GigPackListItem => ({
   public_slug: pack.public_slug,
   updated_at: pack.updated_at,
   created_at: pack.created_at,
+  gig_mood: pack.gig_mood,
 });
 
 export function GigPacksClientPage({

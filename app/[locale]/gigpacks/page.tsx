@@ -26,7 +26,7 @@ const getSheetState = (params?: Record<string, string | string[] | undefined>): 
 };
 
 export default async function GigPacksPage({ params, searchParams }: GigPacksPageProps) {
-  const { locale } = await params;
+  await params; // Consume params to satisfy Next.js
   const resolvedSearchParams = await searchParams;
   const supabase = await createClient();
   let initialSheetState = getSheetState(resolvedSearchParams);
@@ -49,7 +49,7 @@ export default async function GigPacksPage({ params, searchParams }: GigPacksPag
   const { data: gigPacks } = await supabase
     .from("gig_packs")
     .select(
-      "id, title, band_name, date, call_time, venue_name, public_slug, updated_at, created_at",
+      "id, title, band_name, date, call_time, venue_name, public_slug, updated_at, created_at, gig_mood",
     )
     .eq("is_archived", false)
     .order("date", { ascending: true, nullsFirst: false })

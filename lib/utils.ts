@@ -44,3 +44,25 @@ export function formatTime(time: string): string {
   return time;
 }
 
+/**
+ * Get the full public URL for a GigPack
+ * @param slug - The public slug of the GigPack
+ * @returns The full URL to the public GigPack page
+ */
+export function getPublicGigPackUrl(slug: string): string {
+  // Try to get from environment variable first
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  
+  if (appUrl) {
+    return `${appUrl}/g/${slug}`;
+  }
+  
+  // Fallback to window.location.origin on client side
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}/g/${slug}`;
+  }
+  
+  // Development fallback
+  return `http://localhost:3000/g/${slug}`;
+}
+
