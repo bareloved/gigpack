@@ -81,3 +81,36 @@ export interface GigPack {
 export type GigPackInsert = Omit<GigPack, "id" | "created_at" | "updated_at">;
 export type GigPackUpdate = Partial<Omit<GigPack, "id" | "owner_id" | "public_slug" | "created_at">>;
 
+// User Template Types
+// Shared type for template default values (used by both built-in and user templates)
+export interface GigPackTemplateDefaultValues {
+  title?: string;
+  bandName?: string;
+  theme?: GigPackTheme;
+  accentColor?: string;
+  posterSkin?: PosterSkin;
+  dateOffsetDays?: number;
+  dressCode?: string;
+  backlineNotes?: string;
+  parkingNotes?: string;
+  paymentNotes?: string;
+  gigMood?: string;
+  setlistStructured?: SetlistSection[];
+  packingChecklist?: PackingChecklistItem[];
+}
+
+// User-created template stored in database
+export interface UserTemplate {
+  id: string;
+  owner_id: string;
+  name: string;
+  description: string | null;
+  icon: string;
+  default_values: GigPackTemplateDefaultValues;
+  created_at: string;
+  updated_at: string;
+}
+
+export type UserTemplateInsert = Omit<UserTemplate, "id" | "created_at" | "updated_at">;
+export type UserTemplateUpdate = Partial<Omit<UserTemplate, "id" | "owner_id" | "created_at">>;
+

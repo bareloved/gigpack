@@ -1,31 +1,20 @@
-import { SetlistSection, GigPackTheme, PosterSkin } from "./types";
+import { SetlistSection, GigPackTheme, PosterSkin, GigPackTemplateDefaultValues, UserTemplate } from "./types";
 
 /**
  * GigPack Template Type
  * 
  * Represents a pre-configured template that prefills the GigPack form
  * with sensible defaults for common gig scenarios.
+ * 
+ * Used for both built-in templates and converted user templates.
  */
 export interface GigPackTemplate {
   id: string;
   label: string;
   description: string;
   icon: string; // Emoji or simple icon
-  defaultValues: {
-    title?: string;
-    bandName?: string;
-    theme?: GigPackTheme;
-    accentColor?: string;
-    posterSkin?: PosterSkin;
-    dateOffsetDays?: number; // Optional: today + N days for suggested date
-    // Gig fields
-    dressCode?: string;
-    backlineNotes?: string;
-    parkingNotes?: string;
-    paymentNotes?: string;
-    // Setlist
-    setlistStructured?: SetlistSection[];
-  };
+  defaultValues: GigPackTemplateDefaultValues;
+  isUserTemplate?: boolean; // Flag to identify user-created templates
 }
 
 /**
@@ -254,7 +243,35 @@ export function applyTemplateToFormDefaults(template: GigPackTemplate) {
     parkingNotes: defaultValues.parkingNotes || baseDefaults.parkingNotes,
     paymentNotes: defaultValues.paymentNotes || baseDefaults.paymentNotes,
     setlistStructured: defaultValues.setlistStructured || baseDefaults.setlistStructured,
+    gigMood: defaultValues.gigMood || "",
+    packingChecklist: defaultValues.packingChecklist || [],
   };
+}
+
+/**
+ * Convert a UserTemplate (from DB) to a GigPackTemplate (for UI)
+ * This allows user templates to be used alongside built-in templates.
+ */
+export function userTemplateToGigPackTemplate(userTemplate: UserTemplate): GigPackTemplate {
+  return {
+    id: `user-${userTemplate.id}`, // Prefix to avoid ID collision with built-in templates
+    label: userTemplate.name,
+    description: userTemplate.description || "",
+    icon: userTemplate.icon || "📋",
+    defaultValues: userTemplate.default_values,
+    isUserTemplate: true,
+  };
+}
+
+/**
+ * Extract the original user template ID from a GigPackTemplate ID
+ * Returns null if not a user template
+ */
+export function getUserTemplateId(templateId: string): string | null {
+  if (templateId.startsWith("user-")) {
+    return templateId.slice(5);
+  }
+  return null;
 }
 
 

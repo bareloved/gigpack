@@ -3,13 +3,7 @@
 import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { routing } from "@/i18n/routing";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { localeNames } from "@/i18n/config";
 
 export function LanguageSwitcher() {
@@ -17,7 +11,9 @@ export function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const switchLocale = (newLocale: string) => {
+  const toggleLocale = () => {
+    // Toggle between 'en' and 'he'
+    const newLocale = locale === 'en' ? 'he' : 'en';
     // Remove current locale from pathname
     const pathWithoutLocale = pathname.replace(`/${locale}`, "");
     // Navigate to new locale
@@ -25,26 +21,31 @@ export function LanguageSwitcher() {
     router.refresh();
   };
 
+  const currentLanguage = localeNames[locale as keyof typeof localeNames];
+  const nextLanguage = localeNames[(locale === 'en' ? 'he' : 'en') as keyof typeof localeNames];
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" aria-label="Switch language" className="uppercase font-semibold">
-          {locale}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {routing.locales.map((loc) => (
-          <DropdownMenuItem
-            key={loc}
-            onClick={() => switchLocale(loc)}
-            className={locale === loc ? "bg-accent" : ""}
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={toggleLocale}
+            aria-label="Switch language" 
+            className="uppercase font-semibold"
           >
-            <span className="uppercase font-semibold mr-2">{loc}</span>
-            <span className="text-muted-foreground">{localeNames[loc as keyof typeof localeNames]}</span>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+            {locale}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-semibold">{currentLanguage}</p>
+          <p className="text-xs text-muted-foreground">
+            Switch to {nextLanguage}
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

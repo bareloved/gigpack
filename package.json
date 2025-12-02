@@ -9,6 +9,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.2",
     "@hookform/resolvers": "^3.3.4",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",
@@ -23,6 +24,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.6",
+    "@vis.gl/react-google-maps": "^1.7.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
@@ -42,6 +44,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.39.1",
+    "@types/google.maps": "^3.58.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

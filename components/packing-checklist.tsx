@@ -3,14 +3,24 @@
 import { useState, useEffect, useCallback } from "react";
 import { PackingChecklistItem, PackingChecklistState } from "@/lib/types";
 import { CheckSquare } from "lucide-react";
-import { useTranslations } from "next-intl";
 
 interface PackingChecklistProps {
   items: PackingChecklistItem[];
   gigSlug: string;
   accentColor?: string;
   variant?: "minimal" | "vintage" | "social" | "rehearsal";
+  // Optional translations - fallback to English defaults when not in i18n context
+  translations?: {
+    packingChecklist?: string;
+    packingChecklistHint?: string;
+  };
 }
+
+// Default translations (English)
+const DEFAULT_TRANSLATIONS = {
+  packingChecklist: "Packing checklist",
+  packingChecklistHint: "Tick these off as you pack your stuff.",
+};
 
 /**
  * PackingChecklist Component
@@ -24,8 +34,9 @@ interface PackingChecklistProps {
  * - No auth required
  * - Works across all themes
  */
-export function PackingChecklist({ items, gigSlug, accentColor, variant = "minimal" }: PackingChecklistProps) {
-  const t = useTranslations("public");
+export function PackingChecklist({ items, gigSlug, accentColor, variant = "minimal", translations }: PackingChecklistProps) {
+  const t = (key: keyof typeof DEFAULT_TRANSLATIONS) => 
+    translations?.[key] ?? DEFAULT_TRANSLATIONS[key];
   const [checkedState, setCheckedState] = useState<PackingChecklistState>({});
   const [isHydrated, setIsHydrated] = useState(false);
 

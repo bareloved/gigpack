@@ -1,0 +1,6 @@
+---
+alwaysApply: true
+---
+
+
+The app uses locale-based routing so take this into considerations when creating new pages.

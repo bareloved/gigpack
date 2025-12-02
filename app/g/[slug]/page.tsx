@@ -43,7 +43,8 @@ export default async function PublicGigPackPage({ params }: PublicGigPackPagePro
     notFound();
   }
 
-  return <PublicGigPackView initialGigPack={gigPack} slug={slug} />;
+  // Public gig pages default to English locale
+  return <PublicGigPackView initialGigPack={gigPack} slug={slug} locale="en" />;
 }
 
 export const dynamic = "force-dynamic";
