@@ -222,6 +222,18 @@
     "selectMood": "Select a mood",
     "customMood": "Custom...",
     "customMoodPlaceholder": "E.g. Soulful & chill",
+    "gigTypeLabel": "Type",
+    "selectGigType": "Select type...",
+    "gigType": {
+      "wedding": "Wedding",
+      "clubShow": "Club Show",
+      "corporate": "Corporate Event",
+      "barGig": "Bar Gig",
+      "coffeeHouse": "Coffee House",
+      "festival": "Festival",
+      "rehearsal": "Rehearsal",
+      "other": "Other"
+    },
     "pickDate": "Pick a date",
     "materials": {
       "tabLabel": "Materials",

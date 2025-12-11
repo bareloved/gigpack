@@ -485,7 +485,7 @@ export function BandEditorPanel({
               <label className="text-sm font-medium">{t("accentColorLabel")}</label>
               <div className="flex gap-3 items-center flex-wrap">
                 <div className="flex gap-2">
-                  {["#F97316", "#EF4444", "#8B5CF6", "#10B981", "#3B82F6", "#F59E0B"].map(
+                  {["#FDBA74", "#FB923C", "#F97316", "#FBBF24", "#60A5FA", "#8B5CF6"].map(
                     (color) => (
                       <button
                         key={color}

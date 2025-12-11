@@ -101,6 +101,10 @@ function VenueAutocompleteInner({
           color: ${placeholderColor} !important;
           opacity: 1 !important;
         }
+        input:focus {
+          outline: none !important;
+          box-shadow: none !important;
+        }
       `
       shadowRoot.insertBefore(styleEl, shadowRoot.firstChild)
       
@@ -233,14 +237,14 @@ function VenueAutocompleteInner({
   return (
     <div
       className={cn(
-        "flex h-8 w-full items-center rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring",
+        "flex h-8 w-full items-center rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm transition-colors",
         disabled && "pointer-events-none opacity-50",
         className
       )}
     >
       <div
         ref={containerRef}
-        className="flex-1 [&_gmp-place-autocomplete]:bg-transparent [&_gmp-place-autocomplete]:border-0 [&_gmp-place-autocomplete]:shadow-none [&_gmp-place-autocomplete]:p-0 [&_gmp-place-autocomplete]:m-0 [&_input]:bg-transparent [&_input]:border-0 [&_input]:outline-none [&_input]:shadow-none [&_input]:p-0 [&_input]:m-0"
+        className="flex-1 [&_gmp-place-autocomplete]:bg-transparent [&_gmp-place-autocomplete]:border-0 [&_gmp-place-autocomplete]:shadow-none [&_gmp-place-autocomplete]:p-0 [&_gmp-place-autocomplete]:m-0 [&_gmp-place-autocomplete:focus]:border-0 [&_gmp-place-autocomplete:focus]:shadow-none [&_input]:bg-transparent [&_input]:border-0 [&_input]:outline-none [&_input]:shadow-none [&_input]:p-0 [&_input]:m-0 [&_input:focus]:border-0 [&_input:focus]:outline-none [&_input:focus]:shadow-none"
       />
       <MapPin className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
     </div>

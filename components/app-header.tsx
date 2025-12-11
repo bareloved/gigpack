@@ -44,6 +44,7 @@ export function AppHeader({ user }: AppHeaderProps) {
     setSearchValue(searchParams.get("search") || "");
   }, [searchParams]);
 
+
   const handleSearchChange = (value: string) => {
     setSearchValue(value);
     const params = new URLSearchParams(searchParams.toString());
@@ -77,6 +78,11 @@ export function AppHeader({ user }: AppHeaderProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => {
+                    if (!isActive && typeof window !== 'undefined' && (window as any).startNavigationLoading) {
+                      (window as any).startNavigationLoading();
+                    }
+                  }}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors",
@@ -112,8 +118,16 @@ export function AppHeader({ user }: AppHeaderProps) {
           {user && <UserMenu user={user} />}
         </div>
       </div>
+
     </header>
   );
 }
+
+// Hook for navigation loading state
+export const useNavigationLoading = () => {
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  return { isNavigating, setIsNavigating };
+};
 
 

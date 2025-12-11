@@ -222,6 +222,18 @@
     "selectMood": "בחר אווירה",
     "customMood": "מותאם אישית...",
     "customMoodPlaceholder": "למשל: ג'אז רגוע",
+    "gigTypeLabel": "סוג הופעה",
+    "selectGigType": "בחר סוג...",
+    "gigType": {
+      "wedding": "חתונה",
+      "clubShow": "הופעת מועדון",
+      "corporate": "אירוע חברתי",
+      "barGig": "בר",
+      "coffeeHouse": "בית קפה",
+      "festival": "פסטיבל",
+      "rehearsal": "חזרה",
+      "other": "אחר"
+    },
     "pickDate": "בחר תאריך",
     "materials": {
       "tabLabel": "חומרים",
