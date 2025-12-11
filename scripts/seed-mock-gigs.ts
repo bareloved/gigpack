@@ -80,6 +80,7 @@ async function seedMockGigs() {
         accent_color: null,
         poster_skin: null,
         gig_mood: "intimate",
+        gig_type: "club_show",
         packing_checklist: [
           { id: "1", label: "Cables (XLR, 1/4)" },
           { id: "2", label: "Microphone stand" },
@@ -132,6 +133,7 @@ async function seedMockGigs() {
         accent_color: null,
         poster_skin: null,
         gig_mood: "celebration",
+        gig_type: "wedding",
         packing_checklist: [
           { id: "1", label: "Black tie/formal wear" },
           { id: "2", label: "Instrument(s)" },
@@ -186,6 +188,7 @@ async function seedMockGigs() {
         accent_color: null,
         poster_skin: null,
         gig_mood: "high-energy",
+        gig_type: "festival",
         packing_checklist: [
           { id: "1", label: "Instruments + cases" },
           { id: "2", label: "Backup instruments" },
@@ -238,6 +241,7 @@ async function seedMockGigs() {
         accent_color: null,
         poster_skin: null,
         gig_mood: "intimate",
+        gig_type: "coffee_house",
         packing_checklist: [
           { id: "1", label: "Acoustic guitars" },
           { id: "2", label: "Capo & extra strings" },
@@ -285,6 +289,7 @@ async function seedMockGigs() {
         accent_color: null,
         poster_skin: null,
         gig_mood: "elegant",
+        gig_type: "corporate",
         packing_checklist: [
           { id: "1", label: "Instrument in protective case" },
           { id: "2", label: "Bow & extra strings" },
@@ -337,6 +342,7 @@ async function seedMockGigs() {
         accent_color: null,
         poster_skin: null,
         gig_mood: "high-energy",
+        gig_type: "festival",
         packing_checklist: [
           { id: "1", label: "Sunscreen & hat" },
           { id: "2", label: "Instruments & cables" },

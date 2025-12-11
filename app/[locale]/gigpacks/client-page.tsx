@@ -40,10 +40,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { HandDrawnSquiggle, HandDrawnStar } from "@/components/hand-drawn/accents";
 import { GigEditorPanel } from "@/components/gig-editor-panel";
-import type { GigPack, UserTemplate } from "@/lib/types";
+import type { GigPack, UserTemplate, Band } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { getUserTemplates } from "@/lib/userTemplates";
 import { cn } from "@/lib/utils";
+import { classifyGigVisualTheme, pickFallbackImageForTheme } from "@/lib/gig-visual-theme";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // =============================================================================
 // TYPES
@@ -60,8 +62,10 @@ export type GigPackListItem = {
   updated_at: string;
   created_at: string;
   gig_mood: string | null;
+  gig_type: string | null;
   hero_image_url: string | null;
   band_logo_url: string | null;
+  band_id: string | null;
 };
 
 export type GigPackSheetState =
@@ -200,7 +204,16 @@ const groupGigsByTime = (gigs: GigPackListItem[], filter: ViewFilter): GigGroup[
  * Component to display band image with fallback
  * - Board view (card): prefers hero_image_url (wide/promotional images)
  * - List/Compact views (thumbnail/compact): prefers band_logo_url (square logos)
+ *
+ * Priority for card images:
+ * 1. Gig's hero_image_url (explicit hero image)
+ * 2. Band's hero_image_url (if band_id exists)
+ * 3. Themed fallback from visual theme classifier
+ * 4. Paper texture with initials (final fallback)
  */
+// Global cache for band data to avoid duplicate fetches
+const bandCache = new Map<string, Band>();
+
 const GigBandImage = ({
   gig,
   variant = "card",
@@ -208,12 +221,88 @@ const GigBandImage = ({
   gig: GigPackListItem;
   variant?: "card" | "thumbnail" | "compact";
 }) => {
-  // Board view uses hero image (wide), List/Compact use logo (square)
-  const imageUrl = variant === "card"
-    ? gig.hero_image_url || gig.band_logo_url
-    : gig.band_logo_url || gig.hero_image_url;
+  const [bandData, setBandData] = useState<Band | null>(() => {
+    // Check cache first
+    if (gig.band_id && bandCache.has(gig.band_id)) {
+      return bandCache.get(gig.band_id)!;
+    }
+    return null;
+  });
+  const [isLoadingBand, setIsLoadingBand] = useState(false);
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
+
+  // Fetch band data if we have band_id and need it for card view
+  useEffect(() => {
+    if (variant === "card" && gig.band_id && !gig.hero_image_url && !bandData && !isLoadingBand) {
+      // Double-check cache
+      if (bandCache.has(gig.band_id)) {
+        setBandData(bandCache.get(gig.band_id)!);
+        return;
+      }
+
+      setIsLoadingBand(true);
+      const fetchBand = async () => {
+        try {
+          const supabase = createClient();
+          const { data, error } = await supabase
+            .from("bands")
+            .select("*")
+            .eq("id", gig.band_id)
+            .single();
+          
+          if (!error && data) {
+            const band = data as Band;
+            // Cache the result
+            bandCache.set(gig.band_id!, band);
+            setBandData(band);
+          }
+        } catch (err) {
+          console.error("Band fetch error:", err);
+        } finally {
+          setIsLoadingBand(false);
+        }
+      };
+      fetchBand();
+    }
+  }, [variant, gig.band_id, gig.hero_image_url, bandData, isLoadingBand]);
+
+  // Determine the background image source with priority fallback chain
+  let imageUrl: string | null = null;
   
-  // Generate a consistent gradient based on band name
+  // #region agent log - theme classification
+  try {
+    // Priority 1: Gig's explicit hero image
+    if (gig.hero_image_url) {
+      imageUrl = gig.hero_image_url;
+    }
+    // Priority 2: Band's hero image (for card variant only)
+    else if (variant === "card" && bandData?.hero_image_url) {
+      imageUrl = bandData.hero_image_url;
+    }
+    // Priority 3: Themed fallback image (for card variant only)
+    else if (variant === "card") {
+      const theme = classifyGigVisualTheme({
+        gig: {
+          id: gig.id,
+          title: gig.title,
+          band_name: gig.band_name,
+          venue_name: gig.venue_name,
+          gig_type: gig.gig_type,
+          gig_mood: null,
+        } as GigPack,
+        band: bandData || undefined,
+      });
+      imageUrl = pickFallbackImageForTheme(theme);
+    }
+    // Priority 4: Band logo for list/compact views
+    else if (gig.band_logo_url) {
+      imageUrl = gig.band_logo_url;
+    }
+  } catch (err) {
+    console.error("Error in GigBandImage theme/image logic:", err);
+  }
+  
+  // Generate a consistent gradient based on band name (for fallback)
   const getBandGradient = (bandName: string | null) => {
     if (!bandName) return "from-slate-300 to-slate-400 dark:from-slate-700 dark:to-slate-800";
     const colors = [
@@ -237,24 +326,57 @@ const GigBandImage = ({
     compact: { width: 48, height: 48, className: "h-10 w-10" },
   }[variant];
 
-  if (imageUrl) {
+  // Show loading skeleton while fetching band data
+  if (isLoadingBand) {
+    return (
+      <Skeleton className={cn(dimensions.className, variant === "card" ? "rounded-t-lg" : "rounded-md")} />
+    );
+  }
+
+  if (imageUrl && !imageLoadFailed) {
+    // Check if this is a fallback image (static asset in public/) or external image
+    const isFallbackImage = imageUrl.startsWith('/gig-fallbacks/');
+    
+    // Convert to absolute URL to bypass locale-based routing
+    const absoluteImageUrl = isFallbackImage && typeof window !== 'undefined'
+      ? `${window.location.origin}${imageUrl}`
+      : imageUrl;
+    
     return (
       <div className={cn("relative overflow-hidden bg-muted", dimensions.className, variant === "card" ? "rounded-t-lg" : "rounded-md")}>
-        <Image
-          src={imageUrl}
-          alt={gig.band_name || gig.title}
-          fill
-          sizes={variant === "card" ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" : "80px"}
-          className={cn(
-            "object-cover",
-            variant === "card" && "opacity-75"
-          )}
-          loading="lazy"
-          quality={60}
-        />
+        {/* Use plain img for static fallback images, Image component for optimized external images */}
+        {isFallbackImage ? (
+          <img
+            src={absoluteImageUrl}
+            alt={gig.band_name || gig.title}
+            className={cn(
+              "w-full h-full object-cover",
+              variant === "card" && "opacity-75"
+            )}
+            onError={() => {
+              setImageLoadFailed(true);
+            }}
+          />
+        ) : (
+          <Image
+            src={imageUrl}
+            alt={gig.band_name || gig.title}
+            fill
+            sizes={variant === "card" ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" : "80px"}
+            className={cn(
+              "object-cover",
+              variant === "card" && "opacity-75"
+            )}
+            loading="lazy"
+            quality={60}
+            onError={() => {
+              setImageLoadFailed(true);
+            }}
+          />
+        )}
         {/* Gradient overlay for text readability - Spotify style */}
         {variant === "card" && (
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% via-black/30 to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black/80" />
         )}
       </div>
     );
@@ -774,6 +896,85 @@ const CompactView = ({ groups, onEdit, onShare, onDelete, onClick, viewFilter, o
 };
 
 // =============================================================================
+// LOADING COMPONENTS
+// =============================================================================
+
+const GigPackCardSkeleton = () => (
+  <Card className="overflow-hidden border-2">
+    <Skeleton className="h-60 w-full" />
+    <CardContent className="p-5 space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <Skeleton className="h-8 w-20 rounded-lg" />
+        <Skeleton className="h-8 w-24 rounded-lg" />
+      </div>
+      <Skeleton className="h-6 w-full" />
+      <Skeleton className="h-4 w-3/4" />
+      <div className="flex items-center gap-2 pt-2 border-t border-dashed border-border">
+        <Skeleton className="h-4 w-4 rounded" />
+        <Skeleton className="h-4 w-32" />
+      </div>
+      <div className="flex gap-2 pt-2">
+        <Skeleton className="h-9 flex-1" />
+        <Skeleton className="h-9 flex-1" />
+        <Skeleton className="h-9 w-9" />
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const GigPackListSkeleton = () => (
+  <div className="flex flex-col gap-2">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <div key={i} className="flex items-center gap-3 p-4 rounded-lg border bg-card">
+        <Skeleton className="h-16 w-16 rounded-md flex-shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-1" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+        </div>
+        <div className="flex gap-1">
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const GigPackCompactSkeleton = () => (
+  <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    {Array.from({ length: 8 }).map((_, i) => (
+      <Card key={i} className="p-3 space-y-2">
+        <div className="flex items-start gap-2">
+          <Skeleton className="h-10 w-10 rounded-md flex-shrink-0" />
+          <Skeleton className="h-5 w-full" />
+        </div>
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5">
+            <Skeleton className="h-3.5 w-3.5 rounded" />
+            <Skeleton className="h-3.5 w-24" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Skeleton className="h-3.5 w-3.5 rounded" />
+            <Skeleton className="h-3.5 w-28" />
+          </div>
+        </div>
+        <div className="flex items-center justify-between pt-1">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-6 w-6 rounded" />
+        </div>
+      </Card>
+    ))}
+  </div>
+);
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
@@ -799,8 +1000,10 @@ const toListItem = (pack: GigPack): GigPackListItem => ({
   updated_at: pack.updated_at,
   created_at: pack.created_at,
   gig_mood: pack.gig_mood,
+  gig_type: pack.gig_type,
   hero_image_url: pack.hero_image_url,
   band_logo_url: pack.band_logo_url,
+  band_id: pack.band_id,
 });
 
 export function GigPacksClientPage({
@@ -812,6 +1015,13 @@ export function GigPacksClientPage({
   const t = useTranslations("dashboard");
   const tCommon = useTranslations("common");
   const searchParams = useSearchParams();
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Show brief loading state on initial mount for user feedback
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialLoading(false), 150);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Layout State
   const [viewMode, setViewMode] = useState<ViewMode>("board");
@@ -820,6 +1030,7 @@ export function GigPacksClientPage({
   const [gigPacks, setGigPacks] = useState<GigPackListItem[]>(() =>
     sortGigPacks(initialGigPacks),
   );
+  
   
   // Get search query from URL
   const searchQuery = searchParams.get("search") || "";
@@ -857,6 +1068,7 @@ export function GigPacksClientPage({
   const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
   const [isLoadingUserTemplates, setIsLoadingUserTemplates] = useState(false);
 
+
   // Load user templates
   const loadUserTemplates = useCallback(async () => {
     setIsLoadingUserTemplates(true);
@@ -874,10 +1086,7 @@ export function GigPacksClientPage({
     }
   }, []);
 
-  // Load user templates on mount
-  useEffect(() => {
-    loadUserTemplates();
-  }, [loadUserTemplates]);
+  // User templates are loaded lazily when creating a new gig pack (in openCreatePanel)
 
   const closePanel = useCallback(() => {
     setActivePanel(null);
@@ -1047,6 +1256,39 @@ export function GigPacksClientPage({
 
         {/* View Implementation */}
         <div className="min-h-[400px]">
+             {isInitialLoading ? (
+               <>
+                 {viewMode === "board" && (
+                   <div className="space-y-8">
+                     <section>
+                       <Skeleton className="h-4 w-32 mb-4" />
+                       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                         {Array.from({ length: 6 }).map((_, i) => (
+                           <GigPackCardSkeleton key={i} />
+                         ))}
+                       </div>
+                     </section>
+                   </div>
+                 )}
+                 {viewMode === "list" && (
+                   <div className="space-y-8">
+                     <section>
+                       <Skeleton className="h-4 w-32 mb-4" />
+                       <GigPackListSkeleton />
+                     </section>
+                   </div>
+                 )}
+                 {viewMode === "compact" && (
+                   <div className="space-y-8">
+                     <section>
+                       <Skeleton className="h-4 w-32 mb-4" />
+                       <GigPackCompactSkeleton />
+                     </section>
+                   </div>
+                 )}
+               </>
+             ) : (
+               <>
              {viewMode === "board" && (
                <BoardView 
                  groups={groupedGigs}
@@ -1081,6 +1323,8 @@ export function GigPacksClientPage({
                  viewFilter={viewFilter}
                  onCreate={openCreatePanel}
                />
+                 )}
+               </>
              )}
         </div>
       </div>

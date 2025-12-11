@@ -1,15 +1,32 @@
-import { Heebo, Anton } from "next/font/google";
 import localFont from "next/font/local";
 
-export const heebo = Heebo({
-  subsets: ["hebrew", "latin"],
+// Use local fonts to avoid Google Fonts network dependency during build
+export const heebo = localFont({
+  src: [
+    {
+      path: "../public/fonts/ZalandoSansSemiExpanded-VariableFont_wght.ttf",
+      weight: "100 900",
+      style: "normal",
+    },
+  ],
   variable: "--font-heebo",
+  display: "swap",
+  preload: false,
+  fallback: ["system-ui", "sans-serif"],
 });
 
-export const anton = Anton({
-  weight: "400",
-  subsets: ["latin"],
+export const anton = localFont({
+  src: [
+    {
+      path: "../public/fonts/anton-sc-400.woff2",
+      weight: "400",
+      style: "normal",
+    },
+  ],
   variable: "--font-anton",
+  display: "swap",
+  preload: false,
+  fallback: ["system-ui", "serif"],
 });
 
 // Stage-friendly fonts for setlist PDF/preview

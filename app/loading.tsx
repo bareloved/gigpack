@@ -1,10 +1,12 @@
-import { Music } from "lucide-react";
+import { AppLogo } from "@/components/app-logo";
 
 export default function Loading() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center space-y-4">
-        <Music className="h-12 w-12 text-primary animate-pulse mx-auto" />
+        <div className="animate-pulse">
+          <AppLogo variant="icon" size="lg" />
+        </div>
         <p className="text-muted-foreground">Loading...</p>
       </div>
     </div>

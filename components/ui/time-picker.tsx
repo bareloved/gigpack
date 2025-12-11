@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   Popover,
@@ -196,7 +195,6 @@ export function TimePicker({
             disabled={disabled}
             className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground cursor-text"
           />
-          <Clock className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
         </div>
       </PopoverAnchor>
       <PopoverContent 

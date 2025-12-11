@@ -276,6 +276,9 @@ export function GigEditorPanel({
   // Active tab
   const [activeTab, setActiveTab] = useState("lineup");
 
+  // Date picker popover state
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+
   // Save as Template dialog state
   const [saveAsTemplateOpen, setSaveAsTemplateOpen] = useState(false);
 
@@ -301,6 +304,7 @@ export function GigEditorPanel({
   const [paymentNotes, setPaymentNotes] = useState(gigPack?.payment_notes || "");
   const [internalNotes, setInternalNotes] = useState(gigPack?.internal_notes || "");
   const [theme, setTheme] = useState<GigPackTheme>((gigPack?.theme || "minimal") as GigPackTheme);
+  const [gigType, setGigType] = useState<string | null>(gigPack?.gig_type ?? null);
   const [isLoading, setIsLoading] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
 
@@ -386,6 +390,7 @@ export function GigEditorPanel({
     setPaymentNotes("");
     setInternalNotes("");
     setTheme("minimal");
+    setGigType(null);
     setAccentColor("");
     setPosterSkin("paper");
     setBandLogoUrl("");
@@ -456,6 +461,7 @@ export function GigEditorPanel({
       setPackingChecklist(gigPack.packing_checklist || []);
       setMaterials(gigPack.materials || []);
       setSchedule(gigPack.schedule || []);
+      setGigType(gigPack.gig_type || null);
 
       // Sync Info tab visibility flags
       setShowDressCode(!!gigPack.dress_code);
@@ -668,6 +674,7 @@ export function GigEditorPanel({
         payment_notes: paymentNotes || null,
         internal_notes: internalNotes || null,
         theme: theme || "minimal",
+        gig_type: gigType || null,
         band_logo_url: bandLogoUrl || null,
         hero_image_url: heroImageUrl || null,
         accent_color: accentColor || null,
@@ -964,7 +971,7 @@ export function GigEditorPanel({
               />
 
               {/* Band Selector */}
-              <div className="mt-1 mb-6">
+              <div className="mt-1 mb-6 max-w-xs">
                 <Select
                   value={bandId || ""}
                   onValueChange={handleBandSelect}
@@ -973,7 +980,7 @@ export function GigEditorPanel({
                   <SelectTrigger className="w-full h-auto bg-transparent border-none shadow-none px-0 text-base text-muted-foreground hover:text-foreground">
                     <SelectValue placeholder={t("selectBandPlaceholder")} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[180px]">
                     {bands.map((band) => (
                       <SelectItem key={band.id} value={band.id}>
                         {band.name}
@@ -994,7 +1001,7 @@ export function GigEditorPanel({
               <div className="space-y-3 mb-6">
                 {/* Date */}
                 <MetadataRow label={t("date")}>
-                  <Popover>
+                  <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <button
                         type="button"
@@ -1006,7 +1013,7 @@ export function GigEditorPanel({
                         )}
                       >
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        {date ? format(parse(date, "yyyy-MM-dd", new Date()), "PPP", { locale: dateLocale }) : t("pickDate")}
+                        <span className="pl-1">{date ? format(parse(date, "yyyy-MM-dd", new Date()), "PPP", { locale: dateLocale }) : t("pickDate")}</span>
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -1015,6 +1022,7 @@ export function GigEditorPanel({
                         selected={date ? parse(date, "yyyy-MM-dd", new Date()) : undefined}
                         onSelect={(selectedDate) => {
                           setDate(selectedDate ? format(selectedDate, "yyyy-MM-dd") : "");
+                          setDatePickerOpen(false);
                         }}
                         locale={dateLocale}
                         weekStartsOn={0}
@@ -1034,23 +1042,52 @@ export function GigEditorPanel({
 
                 {/* Call Time */}
                 <MetadataRow label={t("soundcheckTime")}>
-                  <div className="w-24">
-                    <TimePicker
-                      value={callTime}
-                      onChange={setCallTime}
-                      disabled={isLoading}
-                    />
+                  <div className="flex items-center gap-2">
+                    <Clock3 className="h-4 w-4 text-muted-foreground" />
+                    <div className="w-16">
+                      <TimePicker
+                        value={callTime}
+                        onChange={setCallTime}
+                        disabled={isLoading}
+                      />
+                    </div>
                   </div>
+                </MetadataRow>
+
+                {/* Gig Type */}
+                <MetadataRow label={t("gigTypeLabel")}>
+                  <Select
+                    value={gigType || ""}
+                    onValueChange={(value) => setGigType(value || null)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="w-full max-w-[200px] h-8">
+                      <SelectValue placeholder={t("selectGigType")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="wedding">{t("gigType.wedding")}</SelectItem>
+                      <SelectItem value="club_show">{t("gigType.clubShow")}</SelectItem>
+                      <SelectItem value="corporate">{t("gigType.corporate")}</SelectItem>
+                      <SelectItem value="bar_gig">{t("gigType.barGig")}</SelectItem>
+                      <SelectItem value="coffee_house">{t("gigType.coffeeHouse")}</SelectItem>
+                      <SelectItem value="festival">{t("gigType.festival")}</SelectItem>
+                      <SelectItem value="rehearsal">{t("gigType.rehearsal")}</SelectItem>
+                      <SelectItem value="other">{t("gigType.other")}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </MetadataRow>
 
                 {/* On Stage Time */}
                 <MetadataRow label={t("onStageTime")}>
-                  <div className="w-24">
-                    <TimePicker
-                      value={onStageTime}
-                      onChange={setOnStageTime}
-                      disabled={isLoading}
-                    />
+                  <div className="flex items-center gap-2">
+                    <Clock3 className="h-4 w-4 text-muted-foreground" />
+                    <div className="w-16">
+                      <TimePicker
+                        value={onStageTime}
+                        onChange={setOnStageTime}
+                        disabled={isLoading}
+                      />
+                    </div>
                   </div>
                 </MetadataRow>
 

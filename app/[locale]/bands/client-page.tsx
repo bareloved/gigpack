@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Band } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { BandEditorPanel } from "@/components/band-editor-panel";
 import { HandDrawnSquiggle, HandDrawnStar } from "@/components/hand-drawn/accents";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,21 @@ interface BandsClientPageProps {
   initialBands: Band[];
 }
 
+const BandCardSkeleton = () => (
+  <Card className="overflow-hidden">
+    <Skeleton className="aspect-video w-full" />
+    <div className="p-4 space-y-3">
+      <Skeleton className="h-6 w-3/4" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-2/3" />
+      <div className="flex gap-2 pt-4">
+        <Skeleton className="h-9 flex-1" />
+        <Skeleton className="h-9 w-9" />
+      </div>
+    </div>
+  </Card>
+);
+
 export default function BandsClientPage({ initialBands }: BandsClientPageProps) {
   const t = useTranslations("bands");
   const { toast } = useToast();
@@ -32,6 +48,13 @@ export default function BandsClientPage({ initialBands }: BandsClientPageProps) 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [bandToDelete, setBandToDelete] = useState<Band | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Show brief loading state on initial mount for user feedback
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialLoading(false), 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCreateNew = () => {
     setEditingBand(undefined);
@@ -120,7 +143,13 @@ export default function BandsClientPage({ initialBands }: BandsClientPageProps) 
       </div>
 
       {/* Bands Grid */}
-      {bands.length === 0 ? (
+      {isInitialLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <BandCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : bands.length === 0 ? (
         <Card className="border-2 border-dashed bg-card/50">
           <div className="flex flex-col items-center justify-center py-16 space-y-4">
             <div className="rounded-full bg-muted p-4">
