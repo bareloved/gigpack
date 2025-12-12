@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { GigPack, GigPackTheme } from "@/lib/types";
@@ -12,6 +12,57 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { createClient } from "@/lib/supabase/client";
 
+// Error Boundary Component for debugging
+class PublicGigPackErrorBoundary extends React.Component<
+  { children: React.ReactNode; slug: string },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode; slug: string }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    console.error("[PublicGigPackErrorBoundary] Caught error:", error);
+    console.error("[PublicGigPackErrorBoundary] Error stack:", error.stack);
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("[PublicGigPackErrorBoundary] Component stack:", errorInfo.componentStack);
+    console.error("[PublicGigPackErrorBoundary] Error details:", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      slug: this.props.slug
+    });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background p-8">
+          <div className="max-w-md w-full bg-card border rounded-lg p-6 text-center">
+            <h2 className="text-xl font-semibold mb-4 text-destructive">Something went wrong</h2>
+            <p className="text-muted-foreground mb-4">
+              There was an error loading this gig pack.
+            </p>
+            <details className="text-left bg-muted p-3 rounded text-sm">
+              <summary className="cursor-pointer font-medium">Error details (for debugging)</summary>
+              <pre className="mt-2 whitespace-pre-wrap text-xs">
+                {this.state.error?.message}
+                {this.state.error?.stack}
+              </pre>
+            </details>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 interface PublicGigPackViewProps {
   initialGigPack: Omit<GigPack, "internal_notes" | "owner_id">;
   slug: string;
@@ -19,6 +70,21 @@ interface PublicGigPackViewProps {
 }
 
 export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: PublicGigPackViewProps) {
+  console.log("[PublicGigPackView] Starting component with:", {
+    slug,
+    locale,
+    initialGigPack: {
+      id: initialGigPack.id,
+      title: initialGigPack.title,
+      date: initialGigPack.date,
+      hasLineup: !!initialGigPack.lineup,
+      hasSchedule: !!initialGigPack.schedule,
+      hasMaterials: !!initialGigPack.materials,
+      hasPackingChecklist: !!initialGigPack.packing_checklist,
+      theme: initialGigPack.theme
+    }
+  });
+
   const searchParams = useSearchParams();
   const t = useTranslations("publicView");
   const [gigPack, setGigPack] = useState(initialGigPack);
@@ -47,6 +113,7 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
 
   // Determine theme: default to 'minimal' if not set
   const theme: GigPackTheme = (gigPack.theme || "minimal") as GigPackTheme;
+  console.log("[PublicGigPackView] Determined theme:", theme, "from gigPack.theme:", gigPack.theme);
 
   // Persist rehearsal mode preference to localStorage
   useEffect(() => {
@@ -135,17 +202,34 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
   // Render unified minimal layout
   // All themes now render as minimal for simplified codebase
   const renderThemeLayout = () => {
-        return <MinimalLayout gigPack={gigPack} openMaps={openMaps} slug={slug} locale={locale} />;
+    console.log("[PublicGigPackView] Rendering theme layout for theme:", theme);
+    try {
+      return <MinimalLayout gigPack={gigPack} openMaps={openMaps} slug={slug} locale={locale} />;
+    } catch (error) {
+      console.error("[PublicGigPackView] Error in renderThemeLayout:", error);
+      throw error;
+    }
   };
 
+  console.log("[PublicGigPackView] Rendering with isRehearsalMode:", isRehearsalMode);
+
   return (
-    <TooltipProvider>
-      {/* Render either Rehearsal View or normal theme layout */}
-      {isRehearsalMode ? (
-        <RehearsalView gigPack={gigPack} openMaps={openMaps} slug={slug} locale={locale} />
-      ) : (
-        renderThemeLayout()
-      )}
+    <PublicGigPackErrorBoundary slug={slug}>
+      <TooltipProvider>
+        {/* Render either Rehearsal View or normal theme layout */}
+        {isRehearsalMode ? (
+          (() => {
+            console.log("[PublicGigPackView] Rendering RehearsalView");
+            try {
+              return <RehearsalView gigPack={gigPack} openMaps={openMaps} slug={slug} locale={locale} />;
+            } catch (error) {
+              console.error("[PublicGigPackView] Error in RehearsalView:", error);
+              throw error;
+            }
+          })()
+        ) : (
+          renderThemeLayout()
+        )}
       
       {/* Controls - Top right corner */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
@@ -197,7 +281,8 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
           <span className="sm:hidden">{isUserActive ? t("statusLive") : t("statusIdle")}</span>
         </div>
       </div>
-    </TooltipProvider>
+      </TooltipProvider>
+    </PublicGigPackErrorBoundary>
   );
 }
 

@@ -128,12 +128,14 @@ export function CompactView({ groups, onEdit, onShare, onDelete, onClick, viewFi
 
                     {/* Time & Location */}
                     <div className="text-sm space-y-0.5 text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5 shrink-0" />
-                        <span className={cn(isTodayGig && "text-orange-600 dark:text-orange-400 font-medium")}>
-                           {formatDate(gig.date, locale)} {gig.call_time && `• ${gig.call_time}`}
-                        </span>
-                      </div>
+                      {gig.date && (
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5 shrink-0" />
+                          <span className={cn(isTodayGig && "text-orange-600 dark:text-orange-400 font-medium")}>
+                             {formatDate(gig.date, locale)} {gig.call_time && `• ${gig.call_time}`}
+                          </span>
+                        </div>
+                      )}
                       {gig.venue_name && (
                         <div className="flex items-center gap-1.5">
                             <MapPin className="h-3.5 w-3.5 shrink-0" />

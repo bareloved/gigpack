@@ -1,75 +1,204 @@
-# GigPack - Share Gig Info with Your Band
+# GigMaster - Gig Management for Working Musicians
 
-A clean, fast, and mobile-friendly web app for creating and sharing gig packs with musicians. Built with Next.js 14, TypeScript, Supabase, and shadcn/ui.
+GigMaster is a comprehensive gig management and planning tool designed specifically for working musicians and bands. Create detailed gig packs, share information seamlessly with your bandmates, generate professional setlists and PDFs, and manage your entire gig workflow—all in one beautifully designed app.
 
-## Features
+## What is GigMaster?
 
-- 🎵 **Create Gig Packs**: Simple form to capture all gig details
-- 🔗 **Share Public Links**: Each gig pack gets a unique, shareable URL
-- 📱 **Mobile-Friendly**: Beautiful responsive design for all devices
-- 🔄 **Auto-Refresh**: Public pages poll for updates every 60 seconds
-- 🔐 **Secure**: Manager-only editing with public read access
-- ⚡ **Fast & Clean**: Minimal dependencies, optimized performance
+GigMaster helps musicians create, share, and manage gig information through:
+- **Gig Packs**: Comprehensive gig planning with all details in one shareable page
+- **Structured Setlists**: Professional setlist management with keys, tempos, and notes
+- **PDF Generation**: Print-ready setlists and gig documentation
+- **Band Collaboration**: Share links, QR codes, and pre-written messages
+- **Multi-language Support**: Full Hebrew and English localization with RTL support
+- **Professional Templates**: Pre-configured templates for weddings, clubs, corporate events, and more
+
+## Key Features
+
+- 🎵 **Gig Pack Creation**: Detailed forms with logistics, lineup, setlists, and branding
+- 🔗 **Public Sharing**: Unique URLs and QR codes for easy band communication
+- 📄 **PDF Setlists**: Generate printable setlists with professional formatting
+- 🎨 **Custom Branding**: Band logos, hero images, accent colors, and poster skins
+- 📱 **Mobile-Optimized**: Perfect for stage use with rehearsal mode
+- 🌙 **Dark Mode**: Stage-friendly low-light viewing
+- 🏗️ **Structured Setlists**: Section-based setlists with metadata (keys, tempos, notes)
+- 📋 **Templates**: Quick-start templates for common gig types
+- 🌐 **International**: Hebrew (RTL) and English support
+- 🔄 **Real-time Updates**: Public pages auto-refresh when gigs are edited
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
-- **Database & Auth**: Supabase
-- **UI Components**: shadcn/ui
-- **Styling**: Tailwind CSS
+- **Database & Auth**: Supabase with RLS
+- **UI Components**: shadcn/ui with Tailwind CSS
+- **Internationalization**: next-intl with URL-based routing
+- **PDF Generation**: Playwright for print-quality PDFs
+- **Styling**: Tailwind CSS with custom design system
 
-## Getting Started
+## Quick Start
 
-### 1. Prerequisites
+1. **Set up Supabase**: Create a project and run the database schema
+2. **Configure environment**: Add your Supabase credentials to `.env.local`
+3. **Install & run**: `npm install && npm run dev`
 
+See [Setup Guide](docs/setup/SETUP.md) for detailed instructions.
+
+## Project Documentation
+
+### 📚 Documentation Overview
+- **[App Overview](docs/overview/APP_OVERVIEW.md)** - Complete technical architecture and current state
+- **[Setup Guide](docs/setup/SETUP.md)** - Step-by-step installation and configuration
+
+### 🎯 Feature Documentation
+- **[Gig Pack Templates](docs/features/templates/GIGPACK-TEMPLATES-IMPLEMENTATION.md)** - Pre-configured gig templates
+- **[Structured Setlists](docs/features/setlists/SETLIST-V2-IMPLEMENTATION.md)** - Professional setlist management
+- **[Rehearsal Mode](docs/features/rehearsal/REHEARSAL-MODE-IMPLEMENTATION.md)** - Stage-optimized viewing
+- **[Share Panel](docs/features/sharing/SHARE-PANEL-IMPLEMENTATION.md)** - Band communication tools
+- **[Branding & Poster Skins](docs/features/branding/BRANDING-IMPLEMENTATION-SUMMARY.md)** - Custom band branding
+
+### 🎨 Design System
+- **[Design System](docs/design/DESIGN-SYSTEM.md)** - Complete design language and patterns
+- **[Hand-Drawn Accents](docs/design/HAND-DRAWN-ACCENTS.md)** - Custom illustration system
+- **[Microcopy Refresh](docs/design/MICROCOPY-REFRESH-SUMMARY.md)** - Language and tone guidelines
+- **[Design Changes](docs/design/DESIGN-CHANGES-SUMMARY.md)** - Visual overhaul summary
+
+### 🌐 Internationalization
+- **[i18n Overview](docs/i18n/I18N.md)** - Complete internationalization system
+- **[Hebrew Implementation](docs/i18n/HEBREW_LOCALE_IMPLEMENTATION.md)** - Hebrew locale details
+- **[Hebrew Audit](docs/i18n/HEBREW_LOCALE_AUDIT.md)** - Translation audit report
+
+### 🛠️ Operations & Development
+- **[Pre-Flight Checklist](docs/ops/PRE-FLIGHT-CHECKLIST.md)** - Development setup verification
+- **[Documentation Maintenance](docs/ops/DOCUMENTATION-MAINTENANCE.md)** - Documentation organization rules
+- **[Debug Guide](docs/debug/DEBUG-POSTER-SKIN.md)** - Troubleshooting poster skins
+- **[Changelog](docs/changelog/CHANGELOG.md)** - Version history and updates
+
+## Architecture Highlights
+
+### Key Features Explained
+
+#### Auto-Refresh with Polling
+Public gig pack pages use smart polling:
+- Polls every ~5 seconds for near-real-time updates
+- Shows "Active" status when polling successfully
+- Graceful fallback if network issues occur
+- No WebSockets needed—simple and reliable
+
+#### Security Model
+- **Row Level Security (RLS)**: Users can only access their own gigs
+- **Service Role API**: Trusted server-side operations for public access
+- **Private Notes**: Internal notes never exposed to public API
+- **Auth Middleware**: Automatic redirects for protected routes
+
+#### Internationalization
+- **URL-based routing**: `/en/gigpacks` and `/he/gigpacks`
+- **Full RTL support**: Hebrew locale with proper text direction
+- **Locale-aware formatting**: Dates, times, and numbers
+- **Google Sans font**: Professional typography for Hebrew UI
+
+### Project Structure
+
+```
+├── app/                          # Next.js App Router
+│   ├── [locale]/                 # Internationalized routes
+│   │   ├── gigpacks/            # Manager dashboard
+│   │   ├── g/[slug]/            # Public gig pack pages
+│   │   ├── setlists/            # PDF setlist tool
+│   │   └── auth/                # Authentication
+│   ├── api/                     # API routes
+│   └── globals.css              # Global styles + design system
+├── components/                  # React components
+│   ├── ui/                      # shadcn/ui components
+│   ├── gigpack/                 # Gig pack features
+│   ├── setlists/                # Setlist tools
+│   └── hand-drawn/              # Custom illustrations
+├── lib/                         # Business logic
+│   ├── supabase/                # Database helpers
+│   ├── gigpackTemplates.ts      # Pre-built templates
+│   └── utils.ts                 # Utilities
+├── docs/                        # Documentation
+│   ├── overview/                # App architecture
+│   ├── setup/                   # Getting started
+│   ├── features/                # Feature details
+│   ├── design/                  # Design system
+│   ├── i18n/                    # Internationalization
+│   ├── ops/                     # Operations
+│   ├── debug/                   # Troubleshooting
+│   └── changelog/               # Release history
+└── messages/                    # Translation files
+    ├── en.json                  # English translations
+    └── he.json                  # Hebrew translations
+```
+
+## Development
+
+### Prerequisites
 - Node.js 18+ installed
 - A Supabase account (free tier works great)
 
-### 2. Set Up Supabase
+### Quick Setup
+1. **Clone and install**: `npm install`
+2. **Set up Supabase**: Create project and run schema from `supabase/schema.sql`
+3. **Configure environment**: Add credentials to `.env.local`
+4. **Run development**: `npm run dev`
 
-1. Create a new project at [https://app.supabase.com](https://app.supabase.com)
+See [Setup Guide](docs/setup/SETUP.md) and [Pre-flight Checklist](docs/ops/PRE-FLIGHT-CHECKLIST.md) for detailed instructions.
 
-2. In your Supabase dashboard, go to **SQL Editor** and run the schema:
-   - Copy the entire contents of `supabase/schema.sql`
-   - Paste it into the SQL Editor
-   - Click "Run" to create all tables, policies, and functions
-
-3. Get your Supabase credentials:
-   - Go to **Settings** → **API**
-   - Copy your **Project URL**
-   - Copy your **Publishable key** (this is the anon/public key, starts with `sb_publishable_...`)
-   - Copy your **Secret key** (labeled "default", starts with `sb_secret_...` - this is the service role key, keep it secret!)
-
-### 3. Install Dependencies
-
+### Building for Production
 ```bash
-npm install
+npm run build
+npm start
 ```
 
-### 4. Configure Environment Variables
+## Deployment
 
-Create a `.env.local` file in the root directory:
+This app deploys to any platform supporting Next.js 16+:
+- **Vercel** (recommended - zero config needed)
+- **Netlify**
+- **Railway**
+- **Self-hosted**
 
-```bash
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
-```
+Remember to set your environment variables in your deployment platform!
 
-⚠️ **Important**: 
-- Replace the placeholder values with your actual Supabase credentials
-- Never commit `.env.local` to git (it's already in `.gitignore`)
-- The service role key should NEVER be exposed to the browser
+## Customization
 
-### 5. Run the Development Server
+### Changing Polling Interval
+In `components/public-gigpack-view.tsx`, modify the interval (currently ~5 seconds).
 
-```bash
-npm run dev
-```
+### Styling & Theming
+- All colors defined in `app/globals.css` using CSS variables
+- Customize the theme by modifying CSS variables
+- Components use Tailwind CSS utility classes
+- See [Design System](docs/design/DESIGN-SYSTEM.md) for complete customization guide
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+## Troubleshooting
+
+### Common Issues
+- **"Error fetching gig packs"**: Check Supabase credentials in `.env.local`
+- **Public pages return 404**: Verify service role key and gig pack exists
+- **Auth not working**: Confirm email confirmation settings in Supabase
+- **Font issues**: Check Google Fonts CDN loading
+
+For detailed troubleshooting, see [Debug Guide](docs/debug/DEBUG-POSTER-SKIN.md).
+
+## Contributing
+
+See [App Overview](docs/overview/APP_OVERVIEW.md) for technical architecture and development guidelines.
+
+## License
+
+MIT
+
+## Support
+
+For issues or questions:
+1. Check the [documentation](docs/) first
+2. Review code comments and inline documentation
+3. Check the Supabase schema for data model details
+
+---
+
+Built with ❤️ for musicians everywhere.
 
 ## Testing the Full Flow
 

@@ -22,8 +22,21 @@ interface MinimalLayoutProps {
  * Supports branding: logo, hero image, accent color, poster skin
  */
 export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: MinimalLayoutProps) {
+  console.log("[MinimalLayout] Starting with gigPack:", {
+    id: gigPack.id,
+    title: gigPack.title,
+    accentColor: gigPack.accent_color,
+    posterSkin: gigPack.poster_skin,
+    heroImageUrl: gigPack.hero_image_url,
+    bandLogoUrl: gigPack.band_logo_url,
+    hasLineup: !!gigPack.lineup,
+    hasSchedule: !!gigPack.schedule,
+    hasMaterials: !!gigPack.materials,
+    hasPackingChecklist: !!gigPack.packing_checklist
+  });
+
   const [setlistExpanded, setSetlistExpanded] = useState(false);
-  
+
   // Get branding values with fallbacks
   const accentColor = gigPack.accent_color || "hsl(var(--primary))";
   const posterSkin = gigPack.poster_skin || "clean";
@@ -34,10 +47,17 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
   } as React.CSSProperties : {};
 
   // Determine background image (hero or fallback)
-  const backgroundImage = gigPack.hero_image_url || pickFallbackImageForTheme(
-    classifyGigVisualTheme({ gig: gigPack as GigPack }),
-    gigPack.id
-  );
+  console.log("[MinimalLayout] Determining background image...");
+  let backgroundImage;
+  try {
+    const classifiedTheme = classifyGigVisualTheme({ gig: gigPack as GigPack });
+    console.log("[MinimalLayout] Classified theme:", classifiedTheme, "for gigId:", gigPack.id);
+    backgroundImage = gigPack.hero_image_url || pickFallbackImageForTheme(classifiedTheme, gigPack.id);
+    console.log("[MinimalLayout] Background image:", backgroundImage);
+  } catch (error) {
+    console.error("[MinimalLayout] Error determining background image:", error);
+    backgroundImage = "/gig-fallbacks/generic-1.jpeg"; // Fallback
+  }
 
   // Get icon for gig type
   const getGigTypeIcon = (gigType: string | null) => {

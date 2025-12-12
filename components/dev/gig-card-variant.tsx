@@ -253,10 +253,12 @@ export function GigCardVariant({ variant, gig }: GigCardVariantProps) {
 
         {/* Date & Call Time pills */}
         <div className="flex flex-wrap gap-2">
-          <div className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold border-2 bg-primary/10 text-primary border-primary/20">
-            <Calendar className="h-3.5 w-3.5" />
-            <span>{formatDate(gig.date)}</span>
-          </div>
+          {gig.date && (
+            <div className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold border-2 bg-primary/10 text-primary border-primary/20">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>{formatDate(gig.date)}</span>
+            </div>
+          )}
 
           {gig.call_time && (
             <div className="inline-flex items-center gap-1.5 rounded-lg bg-muted/60 px-2.5 py-1.5 text-sm font-medium text-muted-foreground border border-border/50">

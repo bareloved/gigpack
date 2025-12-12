@@ -114,7 +114,7 @@ export function ListView({ groups, onEdit, onShare, onDelete, onClick, viewFilte
                   <div className="flex items-center gap-3 md:w-48 shrink-0">
                     <div className="flex flex-col">
                       <span className={cn("font-bold text-lg leading-none", isTodayGig && "text-orange-600 dark:text-orange-400")}>
-                        {formatDate(gig.date, locale)}
+                        {gig.date ? formatDate(gig.date, locale) : "TBD"}
                       </span>
                       <span className="text-sm text-muted-foreground">{gig.call_time || "TBD"}</span>
                     </div>
