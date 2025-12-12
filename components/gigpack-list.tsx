@@ -20,7 +20,6 @@ interface GigPackListProps {
     call_time: string | null;
     venue_name: string | null;
     public_slug: string;
-    gig_mood?: string | null;
   }[];
   onEdit?: (gigPackId: string) => void;
   onCreate?: () => void;
@@ -111,12 +110,6 @@ export function GigPackList({ gigPacks, onEdit, onCreate, onDelete }: GigPackLis
                 <p className="text-base text-muted-foreground font-medium">
                   {pack.band_name}
                 </p>
-              )}
-              {/* Mood Tag */}
-              {pack.gig_mood && (
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary border border-primary/20">
-                  {pack.gig_mood}
-                </span>
               )}
             </div>
 

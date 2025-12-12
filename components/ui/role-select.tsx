@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useTranslations } from "next-intl"
+import { useLocale } from "next-intl"
 import {
   Select,
   SelectContent,
@@ -50,6 +51,7 @@ const CUSTOM_VALUE = "__custom__"
 export function RoleSelect({ value, onChange, disabled, className }: RoleSelectProps) {
   const t = useTranslations("gigpack.roles")
   const tCommon = useTranslations("gigpack")
+  const locale = useLocale()
   
   // Check if current value is a predefined role
   const isPredefinedRole = PREDEFINED_ROLES.some(
@@ -96,10 +98,10 @@ export function RoleSelect({ value, onChange, disabled, className }: RoleSelectP
     return (
       <div className={cn("flex gap-2", className)}>
         <Select value={CUSTOM_VALUE} onValueChange={handleSelectChange} disabled={disabled}>
-          <SelectTrigger className="w-[120px] h-8 text-xs">
+          <SelectTrigger className="w-[120px] h-8 text-xs" dir={locale === "he" ? "rtl" : "ltr"}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent dir={locale === "he" ? "rtl" : "ltr"}>
             {PREDEFINED_ROLES.map((role) => (
               <SelectItem key={role} value={role} className="text-sm">
                 {t(role)}
@@ -125,10 +127,10 @@ export function RoleSelect({ value, onChange, disabled, className }: RoleSelectP
   // Show standard select mode
   return (
     <Select value={selectValue} onValueChange={handleSelectChange} disabled={disabled}>
-      <SelectTrigger className={cn("h-8 text-sm", className)}>
+      <SelectTrigger className={cn("h-8 text-sm", className)} dir={locale === "he" ? "rtl" : "ltr"}>
         <SelectValue placeholder={tCommon("rolePlaceholder")} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent dir={locale === "he" ? "rtl" : "ltr"}>
         {PREDEFINED_ROLES.map((role) => (
           <SelectItem key={role} value={role} className="text-sm">
             {t(role)}

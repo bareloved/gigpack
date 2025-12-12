@@ -30,7 +30,6 @@ export interface MockGig {
   date: string;
   call_time: string;
   venue_name: string;
-  gig_mood: string;
 }
 
 interface GigCardVariantProps {
@@ -42,21 +41,8 @@ interface GigCardVariantProps {
 // HELPER: Generate consistent color from band name
 // =============================================================================
 
-const getBandColor = (bandName: string | null, mood: string | null) => {
+const getBandColor = (bandName: string | null) => {
   if (!bandName) return "from-slate-300 to-slate-400";
-  
-  const moodColors: Record<string, string> = {
-    "High energy": "from-rose-400 to-red-500",
-    Acoustic: "from-amber-400 to-orange-500",
-    Jazz: "from-blue-400 to-indigo-500",
-    Party: "from-fuchsia-400 to-pink-500",
-    Lounge: "from-violet-400 to-purple-500",
-    "Club night": "from-indigo-400 to-blue-600",
-  };
-
-  if (mood && moodColors[mood]) {
-    return moodColors[mood];
-  }
 
   const colors = [
     "from-blue-400 to-indigo-500",
@@ -68,18 +54,6 @@ const getBandColor = (bandName: string | null, mood: string | null) => {
   ];
   const hash = bandName.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return colors[hash % colors.length];
-};
-
-const getMoodStripColor = (mood: string | null) => {
-  const colors: Record<string, string> = {
-    "High energy": "bg-rose-500",
-    Acoustic: "bg-amber-500",
-    Jazz: "bg-blue-500",
-    Party: "bg-fuchsia-500",
-    Lounge: "bg-violet-500",
-    "Club night": "bg-indigo-600",
-  };
-  return colors[mood || ""] || "bg-slate-400";
 };
 
 const getInitials = (name: string) => {
@@ -104,7 +78,7 @@ const formatDate = (dateStr: string): string => {
 // =============================================================================
 
 const CurrentHeader = ({ gig }: { gig: MockGig }) => {
-  const gradient = getBandColor(gig.band_name, gig.gig_mood);
+  const gradient = getBandColor(gig.band_name);
   const initials = getInitials(gig.band_name);
 
   return (
@@ -117,7 +91,7 @@ const CurrentHeader = ({ gig }: { gig: MockGig }) => {
 };
 
 const SoftStripHeader = ({ gig }: { gig: MockGig }) => {
-  const stripColor = getMoodStripColor(gig.gig_mood);
+  const stripColor = "bg-slate-400";
   const initials = getInitials(gig.band_name);
 
   return (
@@ -136,7 +110,7 @@ const SoftStripHeader = ({ gig }: { gig: MockGig }) => {
 };
 
 const MinimalHeader = ({ gig }: { gig: MockGig }) => {
-  const stripColor = getMoodStripColor(gig.gig_mood);
+  const stripColor = "bg-slate-400";
   const initials = getInitials(gig.band_name);
 
   return (
@@ -168,7 +142,6 @@ const PaperHeader = ({ gig }: { gig: MockGig }) => {
   const initials = getInitials(gig.band_name);
   const paperColors = getPaperFallbackColors({
     id: gig.id,
-    gig_mood: gig.gig_mood,
     title: gig.title,
   });
 
@@ -178,7 +151,7 @@ const PaperHeader = ({ gig }: { gig: MockGig }) => {
 };
 
 const GrainHeader = ({ gig }: { gig: MockGig }) => {
-  const gradient = getBandColor(gig.band_name, gig.gig_mood);
+  const gradient = getBandColor(gig.band_name);
   const initials = getInitials(gig.band_name);
 
   return (
@@ -201,7 +174,7 @@ const GrainHeader = ({ gig }: { gig: MockGig }) => {
 };
 
 const BlocksHeader = ({ gig }: { gig: MockGig }) => {
-  const gradient = getBandColor(gig.band_name, gig.gig_mood);
+  const gradient = getBandColor(gig.band_name);
   const initials = getInitials(gig.band_name);
   
   // Extract colors from gradient for two-tone effect
@@ -231,7 +204,7 @@ const BlocksHeader = ({ gig }: { gig: MockGig }) => {
 
 const FrameHeader = ({ gig }: { gig: MockGig }) => {
   const initials = getInitials(gig.band_name);
-  const stripColor = getMoodStripColor(gig.gig_mood);
+  const stripColor = "bg-slate-400";
 
   return (
     <div className="h-48 w-full rounded-t-lg bg-slate-100 dark:bg-slate-800 p-4 flex items-center justify-center">
@@ -275,11 +248,6 @@ export function GigCardVariant({ variant, gig }: GigCardVariantProps) {
           </h3>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground font-medium">{gig.band_name}</span>
-            {gig.gig_mood && (
-              <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium bg-primary/10 text-primary border-primary/20">
-                {gig.gig_mood}
-              </span>
-            )}
           </div>
         </div>
 

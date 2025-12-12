@@ -17,7 +17,6 @@ const MOCK_GIGS: Record<string, MockGig> = {
     date: "2025-07-15",
     call_time: "17:00",
     venue_name: "The Manor Estate, Berkshire",
-    gig_mood: "Acoustic",
   },
   B: {
     id: "mock-2",
@@ -26,7 +25,6 @@ const MOCK_GIGS: Record<string, MockGig> = {
     date: "2025-06-22",
     call_time: "10:30",
     venue_name: "The Ivy Chelsea Garden",
-    gig_mood: "Jazz",
   },
   C: {
     id: "mock-3",
@@ -35,7 +33,6 @@ const MOCK_GIGS: Record<string, MockGig> = {
     date: "2025-06-13",
     call_time: "21:00",
     venue_name: "Ronnie Scott's Jazz Club",
-    gig_mood: "Club night",
   },
 };
 
@@ -140,10 +137,6 @@ export default function GigCardPlayground() {
                 <span className="text-foreground">{currentGig.band_name}</span>
               </div>
               <div>
-                <span className="font-semibold text-muted-foreground">Mood:</span>{" "}
-                <span className="text-foreground">{currentGig.gig_mood}</span>
-              </div>
-              <div>
                 <span className="font-semibold text-muted-foreground">Venue:</span>{" "}
                 <span className="text-foreground">{currentGig.venue_name}</span>
               </div>
@@ -184,7 +177,6 @@ export default function GigCardPlayground() {
         <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
           <li>All variants use the same information layout and shadcn components</li>
           <li>Textures (paper, grain) use lightweight inline SVG data URIs</li>
-          <li>Colors adapt based on gig mood when applicable</li>
           <li>All designs support dark mode with appropriate color variants</li>
           <li>No database queries or API calls – purely visual comparison</li>
         </ul>

@@ -7,7 +7,7 @@
 - Supabase provides auth, database, and storage. Server-side client (`lib/supabase/server.ts`) reads/writes cookies for RLS-backed calls; browser client (`lib/supabase/client.ts`) is used in client components. A service-role client (`createServiceClient`) is used only in trusted server contexts (public share API/pages).
 - Global layout: `app/layout.tsx` wraps all pages with fonts (`lib/fonts`) and `ThemeProvider`. Locale layout (`app/[locale]/layout.tsx`) adds `NextIntlClientProvider`, `LocaleHtmlAttributes` for RTL/LTR, and the global `Toaster` for notifications.
 - Fonts: Heebo and Anton (web + PDF variants). Assets live in `fonts/` and are wired through `lib/fonts.ts`.
-- Data utilities: `lib/utils.ts` (slug generation, formatting, URL helpers), `lib/userTemplates.ts` (CRUD for user templates), `lib/gigpackTemplates.ts` (built-in templates), `lib/image-upload.ts` (Supabase storage helpers), `lib/gigMoods.ts`, and `lib/setlists/types.ts`.
+- Data utilities: `lib/utils.ts` (slug generation, formatting, URL helpers), `lib/userTemplates.ts` (CRUD for user templates), `lib/gigpackTemplates.ts` (built-in templates), `lib/image-upload.ts` (Supabase storage helpers), and `lib/setlists/types.ts`.
 
 ## 2. Routing & Main Screens
 - `/` → redirects to `/${defaultLocale}` (`app/page.tsx`).
@@ -25,9 +25,9 @@
 ## 3. Core Domains & Data Models
 - Profile (`profiles` table; `supabase/schema.sql`): `id` (user), `full_name`, timestamps. One-to-one with Supabase `auth.users`. RLS restricts to self.
 - GigPack (`gig_packs` table; `supabase/schema.sql`, `lib/types.ts`):
-  - Key fields: `title` (name), `band_name`, `date`, `call_time`, `on_stage_time`, `venue_name/address/maps_url`, `lineup` (JSON of role/name/notes), `setlist` (legacy text), `setlist_structured` (array of sections/songs), `dress_code`, `backline_notes`, `parking_notes`, `payment_notes`, `internal_notes` (private), `packing_checklist` (array of items), `gig_mood`, `theme` (`minimal` | `vintage_poster` | `social_card`), branding (`band_logo_url`, `hero_image_url`, `accent_color`, `poster_skin`), `public_slug`, `is_archived`, timestamps, `owner_id` FK to `auth.users`.
+  - Key fields: `title` (name), `band_name`, `date`, `call_time`, `on_stage_time`, `venue_name/address/maps_url`, `lineup` (JSON of role/name/notes), `setlist` (legacy text), `setlist_structured` (array of sections/songs), `dress_code`, `backline_notes`, `parking_notes`, `payment_notes`, `internal_notes` (private), `packing_checklist` (array of items), `theme` (`minimal` | `vintage_poster` | `social_card`), branding (`band_logo_url`, `hero_image_url`, `accent_color`, `poster_skin`), `public_slug`, `is_archived`, timestamps, `owner_id` FK to `auth.users`.
   - Relationships: owned by a user; has many user-created templates (see below) and is referenced by public links via `public_slug`. Public views strip `internal_notes` and owner info.
-- UserTemplate (`user_templates` table; `supabase/migrations/create_user_templates.sql`, `lib/types.ts`): stores reusable gig defaults. Fields: `name`, `description`, `icon`, `default_values` JSON (captures gig defaults like theme, mood, setlist_structured, packing_checklist), `owner_id`, timestamps. RLS restricts to owner.
+- UserTemplate (`user_templates` table; `supabase/migrations/create_user_templates.sql`, `lib/types.ts`): stores reusable gig defaults. Fields: `name`, `description`, `icon`, `default_values` JSON (captures gig defaults like theme, setlist_structured, packing_checklist), `owner_id`, timestamps. RLS restricts to owner.
 - Setlist (client-side data only in `lib/setlists/types.ts` and used for PDF generation): `title`, `location`, `date`, `lines[]`, `options.numbered`, `locale`. No persistence yet; messages hint at future library.
 - Profile-to-GigPack: one-to-many via `owner_id`. GigPack-to-Setlist: embedded structured data, not separate table. Templates: derived from GigPack snapshots and stored per user.
 
@@ -57,14 +57,14 @@
   - `LocaleHtmlAttributes` ensures `lang/dir` are set early for RTL correctness.
 - Dashboard & gig editing:
   - `GigPacksClientPage` (`app/[locale]/gigpacks/client-page.tsx`): board/list/compact views, filtering (upcoming/past), “Next up” strip, share/edit/delete actions, opens editor panel.
-  - `GigEditorPanel` (`components/gig-editor-panel.tsx`): slide-over with tabs (lineup, setlist v2, logistics, branding), supports templates, uploads, packing checklist, mood picker, theme/skin/accent color, and public link copy/preview. Uses Supabase client for mutations.
+  - `GigEditorPanel` (`components/gig-editor-panel.tsx`): slide-over with tabs (lineup, setlist v2, logistics, branding), supports templates, uploads, packing checklist, theme/skin/accent color, and public link copy/preview. Uses Supabase client for mutations.
   - `GigPackForm` (`components/gigpack-form.tsx`): earlier form-style editor (still present).
   - `gigpack/layouts/*` (minimal, vintage poster, social card) define public-facing themes; `RehearsalView` offers stage-friendly mode.
   - `public-gigpack-view.tsx`: chooses theme layout, handles rehearsal mode toggle, polls API, shows live status.
 - Setlists:
   - `SetlistsClientPage` (`components/setlists/setlists-client-page.tsx`): text-to-PDF workflow with live preview (`SetlistPreview`), numbering toggle, locale-aware alignment.
   - `SetlistAutoPrint` (`components/setlists/setlist-print-auto.tsx`): auto-sizes fonts and supports breaks/notes for printable view.
-- Other UI: `AppLogo`, `LanguageSwitcher`, `LocaleHtmlAttributes`, hand-drawn accent components, QR/share dialogs, packing checklist display/editor, template chooser, gig mood chips.
+- Other UI: `AppLogo`, `LanguageSwitcher`, `LocaleHtmlAttributes`, hand-drawn accent components, QR/share dialogs, packing checklist display/editor, template chooser.
 
 ## 6. i18n / Localisation
 - Implementation: `next-intl` with plugin wrapper in `next.config.mjs` (`withNextIntl` pointing to `i18n/request.ts`). Locales are declared in `i18n/routing.ts` and `i18n/config.ts`.
@@ -78,5 +78,5 @@
 - Dashboard creation routes under `/gigpacks/new` and `/gigpacks/[id]/edit` are absent in the current App Router structure; creation/editing happens via the panel instead. Old README paths may be outdated (?).
 - Public page polling interval in code is ~5 seconds; README still states 60 seconds (doc drift).
 - Some marketing/demo routes (`/design/manager-gigs-preview`, `/task-demo`) are placeholders with minimal logic.
-- Supabase schema in `schema.sql` lacks newer columns (branding, moods, packing checklist, structured setlist) added by later migrations; ensure migrations are applied in order to match `lib/types.ts` expectations.
+- Supabase schema in `schema.sql` lacks newer columns (branding, packing checklist, structured setlist) added by later migrations; ensure migrations are applied in order to match `lib/types.ts` expectations.
 

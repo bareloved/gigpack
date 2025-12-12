@@ -179,7 +179,7 @@ export function TimePicker({
           ref={containerRef}
           onClick={handleContainerClick}
           className={cn(
-            "flex h-8 w-full items-center rounded-md border border-input bg-transparent px-2 py-1 text-sm shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring cursor-text",
+            "flex h-8 w-[80px] items-center justify-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring cursor-text",
             disabled && "cursor-not-allowed opacity-50",
             className
           )}
@@ -193,12 +193,12 @@ export function TimePicker({
             onKeyDown={handleInputKeyDown}
             placeholder={placeholder}
             disabled={disabled}
-            className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground cursor-text"
+            className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground cursor-text text-center"
           />
         </div>
       </PopoverAnchor>
       <PopoverContent 
-        className="w-[140px] p-0" 
+        className="w-[100px] p-0" 
         align="start"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}

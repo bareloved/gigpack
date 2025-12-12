@@ -207,19 +207,37 @@ export function classifyGigVisualTheme(options: {
 
 /**
  * Pick a fallback image URL for a given visual theme
- * If multiple images are available, randomly selects one for variety
+ * Uses deterministic selection based on gig ID for consistent results
  *
  * @param theme - GigVisualTheme to get fallback image for
+ * @param gigId - Gig ID to ensure consistent selection across refreshes
  * @returns Path to the fallback image (relative to public directory)
  */
-export function pickFallbackImageForTheme(theme: GigVisualTheme): string {
+export function pickFallbackImageForTheme(theme: GigVisualTheme, gigId?: string): string {
   const images = THEME_IMAGES[theme];
   if (!images || images.length === 0) {
     // Fallback to generic if theme not found
     return THEME_IMAGES.genericMusic[0];
   }
 
-  // Randomly select from available images for this theme
-  const randomIndex = Math.floor(Math.random() * images.length);
-  return images[randomIndex];
+  // If only one image available, return it
+  if (images.length === 1) {
+    return images[0];
+  }
+
+  // Use deterministic selection based on gig ID to ensure consistency
+  if (gigId) {
+    // Create a simple hash from the gig ID
+    let hash = 0;
+    for (let i = 0; i < gigId.length; i++) {
+      const char = gigId.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    const index = Math.abs(hash) % images.length;
+    return images[index];
+  }
+
+  // Fallback to first image if no gigId provided
+  return images[0];
 }

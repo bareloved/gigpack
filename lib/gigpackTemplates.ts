@@ -56,7 +56,7 @@ export const GIGPACK_TEMPLATES: GigPackTemplate[] = [
       backlineNotes: "Full backline usually provided. Confirm PA system and monitors.",
       parkingNotes: "Check with venue coordinator for band parking and load-in access.",
       paymentNotes: "Typically 50% deposit, remainder on day. Confirm payment schedule.",
-      theme: "vintage_poster",
+      theme: "minimal",
       accentColor: "#F97316",
       posterSkin: "paper",
       setlistStructured: [
@@ -80,7 +80,7 @@ export const GIGPACK_TEMPLATES: GigPackTemplate[] = [
       dressCode: "Dark clothing, stage-friendly",
       backlineNotes: "House backline available. Bring your own cymbals, snare, and pedals.",
       parkingNotes: "Street parking or nearby lot. Load-in through back entrance.",
-      theme: "vintage_poster",
+      theme: "minimal",
       accentColor: "#EF4444",
       posterSkin: "grain",
       setlistStructured: [
@@ -125,7 +125,7 @@ export const GIGPACK_TEMPLATES: GigPackTemplate[] = [
       backlineNotes: "Usually house PA. Bring your own instruments and pedals.",
       parkingNotes: "Street parking. Load-in through side door.",
       paymentNotes: "Cash at end of night or Venmo/PayPal.",
-      theme: "social_card",
+      theme: "minimal",
       accentColor: "#F59E0B",
       posterSkin: "clean",
       setlistStructured: [
@@ -170,7 +170,7 @@ export const GIGPACK_TEMPLATES: GigPackTemplate[] = [
       backlineNotes: "Festival backline provided. Submit technical rider early. Expect quick changeover.",
       parkingNotes: "Artist parking pass required. Follow festival load-in schedule.",
       paymentNotes: "Festival contract payment. Confirm schedule and terms.",
-      theme: "vintage_poster",
+      theme: "minimal",
       accentColor: "#10B981",
       posterSkin: "grain",
       setlistStructured: [

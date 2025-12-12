@@ -26,7 +26,7 @@ BEGIN
     venue_name, venue_address, venue_maps_url, lineup,
     setlist, setlist_structured, dress_code, backline_notes,
     parking_notes, payment_notes, internal_notes, public_slug,
-    theme, poster_skin, accent_color, gig_mood, packing_checklist, is_archived
+    theme, poster_skin, accent_color, packing_checklist, is_archived
   ) VALUES (
     test_user_id,
     'ELECTRIC THUNDER TOUR',
@@ -83,7 +83,6 @@ BEGIN
     'vintage_poster',
     'paper',
     '#FF4500',
-    'High energy 🔥',
     '[
       {"id": "p1", "label": "Guitar (main)"},
       {"id": "p2", "label": "Guitar (backup)"},
@@ -105,7 +104,7 @@ BEGIN
     venue_name, venue_address, venue_maps_url, lineup,
     setlist, setlist_structured, dress_code, backline_notes,
     parking_notes, payment_notes, internal_notes, public_slug,
-    theme, accent_color, gig_mood, packing_checklist, is_archived
+    theme, accent_color, packing_checklist, is_archived
   ) VALUES (
     test_user_id,
     'Sarah & James Wedding',
@@ -176,7 +175,6 @@ BEGIN
     'sarah-james-wedding',
     'minimal',
     '#D4AF37',
-    'Wedding 🕊️',
     '[
       {"id": "w1", "label": "Formal attire"},
       {"id": "w2", "label": "Sheet music binder"},
@@ -197,7 +195,7 @@ BEGIN
     venue_name, venue_address, venue_maps_url, lineup,
     setlist, setlist_structured, dress_code, backline_notes,
     parking_notes, payment_notes, internal_notes, public_slug,
-    theme, accent_color, gig_mood, packing_checklist, is_archived
+    theme, accent_color, packing_checklist, is_archived
   ) VALUES (
     test_user_id,
     'Late Night at the Blue Room',
@@ -244,7 +242,6 @@ BEGIN
     'blue-room-dizzy-tribute',
     'social_card',
     '#1E90FF',
-    'Jazz vibes 🎺',
     '[
       {"id": "jz1", "label": "Trumpet"},
       {"id": "jz2", "label": "Flugelhorn"},
@@ -263,7 +260,7 @@ BEGIN
     venue_name, venue_address, venue_maps_url, lineup,
     setlist, setlist_structured, dress_code, backline_notes,
     parking_notes, payment_notes, internal_notes, public_slug,
-    theme, poster_skin, accent_color, gig_mood, packing_checklist, is_archived
+    theme, poster_skin, accent_color, packing_checklist, is_archived
   ) VALUES (
     test_user_id,
     'NEON DREAMS',
@@ -316,7 +313,6 @@ BEGIN
     'vintage_poster',
     'grain',
     '#FF00FF',
-    'Club night 🌃',
     '[
       {"id": "dj1", "label": "USB drives (x3)"},
       {"id": "dj2", "label": "Laptop (backup)"},
@@ -336,7 +332,7 @@ BEGIN
     venue_name, venue_address, venue_maps_url, lineup,
     setlist, setlist_structured, dress_code, backline_notes,
     parking_notes, payment_notes, internal_notes, public_slug,
-    theme, accent_color, gig_mood, packing_checklist, is_archived
+    theme, accent_color, packing_checklist, is_archived
   ) VALUES (
     test_user_id,
     'TechCorp Product Launch',
@@ -392,7 +388,6 @@ BEGIN
     'techcorp-launch-2025',
     'minimal',
     '#00D4AA',
-    'Corporate ✨',
     '[
       {"id": "tc1", "label": "Laptop + interface"},
       {"id": "tc2", "label": "Backup tracks on USB"},
@@ -411,7 +406,7 @@ BEGIN
     venue_name, venue_address, venue_maps_url, lineup,
     setlist, setlist_structured, dress_code, backline_notes,
     parking_notes, payment_notes, internal_notes, public_slug,
-    theme, accent_color, gig_mood, packing_checklist, is_archived
+    theme, accent_color, packing_checklist, is_archived
   ) VALUES (
     test_user_id,
     'Sunday Morning Sessions',
@@ -449,7 +444,6 @@ BEGIN
     'sunday-roasted-bean',
     'social_card',
     '#8B4513',
-    'Acoustic 🪕',
     '[
       {"id": "ac1", "label": "Acoustic guitar"},
       {"id": "ac2", "label": "Ukulele"},
@@ -469,7 +463,7 @@ BEGIN
     venue_name, venue_address, venue_maps_url, lineup,
     setlist, setlist_structured, dress_code, backline_notes,
     parking_notes, payment_notes, internal_notes, public_slug,
-    theme, poster_skin, accent_color, gig_mood, packing_checklist, is_archived
+    theme, poster_skin, accent_color, packing_checklist, is_archived
   ) VALUES (
     test_user_id,
     'BLUES & BREWS',
@@ -518,7 +512,6 @@ BEGIN
     'vintage_poster',
     'clean',
     '#DAA520',
-    'Laid back 🍷',
     '[
       {"id": "bl1", "label": "Guitar"},
       {"id": "bl2", "label": "Harmonicas (A, C, E, G)"},
@@ -537,7 +530,7 @@ BEGIN
     venue_name, venue_address, venue_maps_url, lineup,
     setlist, setlist_structured, dress_code, backline_notes,
     parking_notes, payment_notes, internal_notes, public_slug,
-    theme, accent_color, gig_mood, is_archived
+    theme, accent_color, is_archived
   ) VALUES (
     test_user_id,
     'Thursday Dinner Service',
@@ -575,7 +568,7 @@ BEGIN
     owner_id, title, band_name, date, call_time, on_stage_time,
     venue_name, venue_address, lineup,
     setlist, setlist_structured, public_slug,
-    theme, gig_mood, is_archived
+    theme, is_archived
   ) VALUES (
     test_user_id,
     'EMERGENCY SUB - Read Notes!',
@@ -592,7 +585,6 @@ BEGIN
     NULL,
     'emergency-sub-seattle',
     'social_card',
-    'High energy 🔥',
     false
   );
 
@@ -605,7 +597,7 @@ BEGIN
     venue_name, venue_address, venue_maps_url, lineup,
     setlist, setlist_structured, dress_code, backline_notes,
     parking_notes, payment_notes, internal_notes, public_slug,
-    theme, poster_skin, accent_color, gig_mood, packing_checklist, is_archived
+    theme, poster_skin, accent_color, packing_checklist, is_archived
   ) VALUES (
     test_user_id,
     'SUNDOWN FESTIVAL 2024',
@@ -647,7 +639,6 @@ BEGIN
     'vintage_poster',
     'paper',
     '#FF6B35',
-    'High energy 🔥',
     '[
       {"id": "fest1", "label": "Telecaster"},
       {"id": "fest2", "label": "Pedal steel"},

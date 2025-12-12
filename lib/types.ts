@@ -115,8 +115,6 @@ export interface GigPack {
   poster_skin: PosterSkin | null;
   // Packing checklist
   packing_checklist: PackingChecklistItem[] | null;
-  // Gig mood - vibe/context tag
-  gig_mood: string | null;
   // Gig type - category for visual theme classification
   // Expected values: "wedding" | "club_show" | "corporate" | "bar_gig" | "coffee_house" | "festival" | "rehearsal" | "other"
   // Migration: 20251211190354_add_gig_type_to_gig_packs.sql

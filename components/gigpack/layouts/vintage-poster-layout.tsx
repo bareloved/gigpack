@@ -106,12 +106,6 @@ export function VintagePosterLayout({ gigPack, openMaps, slug }: VintagePosterLa
                   {gigPack.band_name}
                 </p>
               )}
-              {/* Gig Mood Tag */}
-              {gigPack.gig_mood && (
-                <span className="inline-flex items-center rounded-full bg-white/20 backdrop-blur-sm px-3 py-1 text-sm font-bold tracking-wide border border-white/30 mt-2">
-                  {gigPack.gig_mood}
-                </span>
-              )}
             </div>
           </div>
 

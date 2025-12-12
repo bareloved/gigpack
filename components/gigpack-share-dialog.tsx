@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, MessageCircle, Share, Mail, ExternalLink } from "lucide-react";
 import { GigPackQr } from "@/components/gigpack-qr";
 import { getPublicGigPackUrl, formatDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -41,6 +42,8 @@ export function GigPackShareDialog({
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedMessage1, setCopiedMessage1] = useState(false);
   const [copiedMessage2, setCopiedMessage2] = useState(false);
+
+  const isRtl = locale === "he";
 
   const publicUrl = getPublicGigPackUrl(gigPack.public_slug);
 
@@ -86,15 +89,95 @@ export function GigPackShareDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className={cn(
+        "max-w-2xl max-h-[90vh] overflow-y-auto",
+        isRtl && "[&>button]:right-auto [&>button]:left-4"
+      )}>
+        <div className={cn(
+          "flex flex-col space-y-1.5",
+          isRtl ? "text-right" : "text-center sm:text-left"
+        )}>
           <DialogTitle className="text-2xl">{t("title")}</DialogTitle>
           <DialogDescription className="text-base">
             {t("description")}
           </DialogDescription>
-        </DialogHeader>
+        </div>
 
         <div className="space-y-6 mt-4">
+          {/* Quick Actions Section */}
+          <div className="space-y-3">
+            <Label className="text-base font-semibold">
+              {t("quickActions")}
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              {/* WhatsApp */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-start gap-2 h-auto p-3"
+                onClick={() => {
+                  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message1)}`;
+                  window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+                }}
+              >
+                <MessageCircle className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm">{t("whatsapp")}</span>
+              </Button>
+
+              {/* Native Share (Web Share API) */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-start gap-2 h-auto p-3"
+                onClick={async () => {
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({
+                        title: gigPack.title,
+                        text: t("shareText", { title: gigPack.title }),
+                        url: publicUrl,
+                      });
+                    } catch (error) {
+                      // User cancelled or error occurred
+                      console.log('Share cancelled or failed:', error);
+                    }
+                  } else {
+                    // Fallback: copy link
+                    copyToClipboard(publicUrl, setCopiedLink, t("linkCopied"));
+                  }
+                }}
+              >
+                <Share className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm">{t("shareNative")}</span>
+              </Button>
+
+              {/* Email */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-start gap-2 h-auto p-3"
+                onClick={() => {
+                  const subject = t("emailSubject", { title: gigPack.title });
+                  const body = encodeURIComponent(message2);
+                  const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${body}`;
+                  window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
+                }}
+              >
+                <Mail className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm">{t("email")}</span>
+              </Button>
+
+              {/* Open Link */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-start gap-2 h-auto p-3"
+                onClick={() => {
+                  window.open(publicUrl, '_blank', 'noopener,noreferrer');
+                }}
+              >
+                <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm">{t("openLink")}</span>
+              </Button>
+            </div>
+          </div>
+
           {/* Public Link Section */}
           <div className="space-y-3">
             <Label htmlFor="public-link" className="text-base font-semibold">
@@ -115,9 +198,9 @@ export function GigPackShareDialog({
                 className="flex-shrink-0"
               >
                 {copiedLink ? (
-                  <Check className="h-4 w-4 mr-2" />
+                  <Check className={cn("h-4 w-4", isRtl ? "ml-2" : "mr-2")} />
                 ) : (
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className={cn("h-4 w-4", isRtl ? "ml-2" : "mr-2")} />
                 )}
                 {copiedLink ? t("copiedButton") : t("copyButton")}
               </Button>
@@ -162,9 +245,9 @@ export function GigPackShareDialog({
                   size="sm"
                 >
                   {copiedMessage1 ? (
-                    <Check className="h-3.5 w-3.5 mr-1.5" />
+                    <Check className={cn("h-3.5 w-3.5", isRtl ? "ml-1.5" : "mr-1.5")} />
                   ) : (
-                    <Copy className="h-3.5 w-3.5 mr-1.5" />
+                    <Copy className={cn("h-3.5 w-3.5", isRtl ? "ml-1.5" : "mr-1.5")} />
                   )}
                   {copiedMessage1 ? t("copiedButton") : t("copyMessage")}
                 </Button>
@@ -192,9 +275,9 @@ export function GigPackShareDialog({
                   size="sm"
                 >
                   {copiedMessage2 ? (
-                    <Check className="h-3.5 w-3.5 mr-1.5" />
+                    <Check className={cn("h-3.5 w-3.5", isRtl ? "ml-1.5" : "mr-1.5")} />
                   ) : (
-                    <Copy className="h-3.5 w-3.5 mr-1.5" />
+                    <Copy className={cn("h-3.5 w-3.5", isRtl ? "ml-1.5" : "mr-1.5")} />
                   )}
                   {copiedMessage2 ? t("copiedButton") : t("copyMessage")}
                 </Button>

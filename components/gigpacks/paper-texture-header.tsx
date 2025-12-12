@@ -77,31 +77,12 @@ const PAPER_PALETTE: PaperColors[] = [
 // =============================================================================
 
 /**
- * Determine paper colors for a gig based on mood and stable hash
+ * Determine paper colors for a gig based on stable hash
  */
 export function getPaperFallbackColors(gig: {
   id: string;
-  gig_mood: string | null;
   title: string;
 }): PaperColors {
-  // First, try mapping by gig mood if available
-  if (gig.gig_mood) {
-    const moodToIndex: Record<string, number> = {
-      "High energy": 0, // Warm cream
-      Acoustic: 3, // Warm beige
-      Jazz: 1, // Blue-gray
-      Party: 4, // Soft lavender
-      Lounge: 4, // Soft lavender
-      "Club night": 1, // Blue-gray
-      Retro: 3, // Warm beige
-      Outdoor: 2, // Sage green
-    };
-
-    const index = moodToIndex[gig.gig_mood];
-    if (index !== undefined) {
-      return PAPER_PALETTE[index];
-    }
-  }
 
   // Fallback: stable hash from gig.id
   const hash = gig.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);

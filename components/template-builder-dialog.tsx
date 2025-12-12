@@ -89,6 +89,7 @@ export function TemplateBuilderDialog({
   const [backlineNotes, setBacklineNotes] = useState("");
   const [parkingNotes, setParkingNotes] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
+  // Theme is now always minimal for unified design
   const [theme, setTheme] = useState<GigPackTheme>("minimal");
   const [accentColor, setAccentColor] = useState("");
   const [posterSkin, setPosterSkin] = useState<PosterSkin>("paper");
@@ -133,7 +134,8 @@ export function TemplateBuilderDialog({
       if (backlineNotes.trim()) defaultValues.backlineNotes = backlineNotes.trim();
       if (parkingNotes.trim()) defaultValues.parkingNotes = parkingNotes.trim();
       if (paymentNotes.trim()) defaultValues.paymentNotes = paymentNotes.trim();
-      if (theme) defaultValues.theme = theme;
+      // Always use minimal theme for unified design
+      defaultValues.theme = "minimal";
       if (accentColor.trim()) defaultValues.accentColor = accentColor.trim();
       if (posterSkin) defaultValues.posterSkin = posterSkin;
       if (setlistStructured.length > 0) defaultValues.setlistStructured = setlistStructured;
@@ -324,29 +326,10 @@ export function TemplateBuilderDialog({
             <CollapsibleFieldGroup title={tGigpack("design")}>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>{tGigpack("themeMinimal")}</Label>
-                  <RadioGroup value={theme} onValueChange={(value) => setTheme(value as GigPackTheme)}>
-                    <div className="flex flex-wrap gap-3">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="minimal" id="builder-theme-minimal" />
-                        <Label htmlFor="builder-theme-minimal" className="cursor-pointer">
-                          {tGigpack("themeMinimal")}
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="vintage_poster" id="builder-theme-vintage" />
-                        <Label htmlFor="builder-theme-vintage" className="cursor-pointer">
-                          {tGigpack("themeVintagePoster")}
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="social_card" id="builder-theme-social" />
-                        <Label htmlFor="builder-theme-social" className="cursor-pointer">
-                          {tGigpack("themeSocialCard")}
-                        </Label>
-                      </div>
+                  <Label>{tGigpack("theme")}</Label>
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                    <span>Modern minimal design (all templates use this unified layout)</span>
                     </div>
-                  </RadioGroup>
                 </div>
 
                 <div className="space-y-2">

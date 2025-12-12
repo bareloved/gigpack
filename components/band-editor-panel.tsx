@@ -555,7 +555,7 @@ export function BandEditorPanel({
                     <Input
                       value={member.name || ""}
                       onChange={(e) => handleUpdateLineupMember(index, "name", e.target.value)}
-                      placeholder="Name (optional)"
+                      placeholder="Name"
                       disabled={isLoading}
                     />
                   </div>

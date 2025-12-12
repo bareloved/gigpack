@@ -48,7 +48,6 @@ export interface GigPackFormInitialValues {
   theme?: GigPackTheme;
   accentColor?: string;
   posterSkin?: PosterSkin;
-  gigMood?: string;
   bandLogoUrl?: string;
   heroImageUrl?: string;
   packingChecklist?: PackingChecklistItem[];
@@ -109,7 +108,6 @@ export function GigPackForm({ gigPack, initialValues, onCancel, onCreateSuccess,
   const [paymentNotes, setPaymentNotes] = useState(gigPack?.payment_notes || initialValues?.paymentNotes || "");
   const [internalNotes, setInternalNotes] = useState(gigPack?.internal_notes || initialValues?.internalNotes || "");
   const [theme, setTheme] = useState<GigPackTheme>((gigPack?.theme || initialValues?.theme || "minimal") as GigPackTheme);
-  const [gigMood, setGigMood] = useState(gigPack?.gig_mood || initialValues?.gigMood || "");
   const [isLoading, setIsLoading] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
 
@@ -297,7 +295,6 @@ export function GigPackForm({ gigPack, initialValues, onCancel, onCreateSuccess,
         payment_notes: paymentNotes || null,
         internal_notes: internalNotes || null,
         theme: theme || "minimal",
-        gig_mood: gigMood || null,
         // Branding fields
         band_logo_url: bandLogoUrl || null,
         hero_image_url: heroImageUrl || null,
@@ -938,7 +935,6 @@ export function GigPackForm({ gigPack, initialValues, onCancel, onCreateSuccess,
           backlineNotes,
           parkingNotes,
           paymentNotes,
-          gigMood,
           setlistStructured,
           packingChecklist,
         }}

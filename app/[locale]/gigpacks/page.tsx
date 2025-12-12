@@ -33,17 +33,11 @@ export default async function GigPacksPage({
   params,
   searchParams,
 }: GigPacksPageProps) {
-  // Performance instrumentation
-  console.time("gigpacks-page-total");
-  console.time("gigpacks-params-await");
   // Must await params and searchParams in Next.js 15/16
   await params; // Consume params to satisfy Next.js
   const resolvedSearchParams = await searchParams;
-  console.timeEnd("gigpacks-params-await");
   
-  console.time("gigpacks-supabase-create");
   const supabase = await createClient();
-  console.timeEnd("gigpacks-supabase-create");
 
   // Determine if we should open create or edit drawer based on URL params
   let initialSheetState = getSheetState(resolvedSearchParams);
@@ -51,7 +45,6 @@ export default async function GigPacksPage({
 
   // If editing, fetch the specific gig pack
   if (initialSheetState?.mode === "edit") {
-    console.time("gigpacks-edit-fetch");
     const { data, error } = await supabase
       .from("gig_packs")
       .select("*")
@@ -64,59 +57,52 @@ export default async function GigPacksPage({
     } else {
       initialEditingGigPack = data;
     }
-    console.timeEnd("gigpacks-edit-fetch");
   }
 
   // Fetch all non-archived gig packs for the list
-  // Try with new columns first (gig_type, band_id), fall back to old columns if they don't exist
-  let gigPacks: any[] | null = null;
-  let queryError: any = null;
-
-  console.time("gigpacks-list-fetch");
-  // Start both queries in parallel for faster fallback handling
-  const tryQuery = supabase
+  const { data: gigPacks, error: queryError } = await supabase
     .from("gig_packs")
     .select(
-      "id, title, band_name, date, call_time, venue_name, public_slug, updated_at, created_at, gig_mood, gig_type, hero_image_url, band_logo_url, band_id",
+      "id, title, band_name, date, call_time, venue_name, public_slug, updated_at, created_at, gig_type, hero_image_url, band_logo_url, band_id",
     )
     .eq("is_archived", false)
     .order("date", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
 
-  const fallbackQuery = supabase
-      .from("gig_packs")
-      .select(
-        "id, title, band_name, date, call_time, venue_name, public_slug, updated_at, created_at, gig_mood, hero_image_url, band_logo_url",
-      )
-      .eq("is_archived", false)
-      .order("date", { ascending: true, nullsFirst: false })
-      .order("created_at", { ascending: false });
-
-  // Execute both queries in parallel
-  const [tryResult, fallbackResult] = await Promise.allSettled([
-    tryQuery,
-    fallbackQuery,
-  ]);
-  console.timeEnd("gigpacks-list-fetch");
-
-  if (tryResult.status === "fulfilled" && !tryResult.value.error) {
-    gigPacks = tryResult.value.data;
-  } else if (fallbackResult.status === "fulfilled" && !fallbackResult.value.error) {
-      // Add null values for missing columns
-    gigPacks = (fallbackResult.value.data || []).map(gig => ({
-        ...gig,
-        gig_type: null,
-        band_id: null,
-      }));
-  } else {
-    queryError = tryResult.status === "rejected" ? tryResult.reason : tryResult.value.error;
+  // Handle query error gracefully
+  if (queryError) {
+    console.error("Error fetching gig packs:", queryError);
+    // Return empty state instead of crashing
+    return (
+      <GigPacksClientPage
+        initialGigPacks={[]}
+        initialSheetState={initialSheetState}
+        initialEditingGigPack={initialEditingGigPack}
+      />
+    );
   }
 
-  console.timeEnd("gigpacks-page-total");
+  // Ensure gigPacks is an array and handle missing columns
+  const safeGigPacks = (gigPacks || []).map(gig => ({
+    id: gig.id,
+    title: gig.title,
+    band_name: gig.band_name,
+    date: gig.date,
+    call_time: gig.call_time,
+    venue_name: gig.venue_name,
+    public_slug: gig.public_slug,
+    updated_at: gig.updated_at,
+    created_at: gig.created_at,
+    gig_type: gig.gig_type || null,
+    hero_image_url: gig.hero_image_url,
+    band_logo_url: gig.band_logo_url,
+    band_id: gig.band_id || null,
+  }));
+
   // Render the client page with server-fetched data
   return (
     <GigPacksClientPage
-      initialGigPacks={gigPacks || []}
+      initialGigPacks={safeGigPacks}
       initialSheetState={initialSheetState}
       initialEditingGigPack={initialEditingGigPack}
     />

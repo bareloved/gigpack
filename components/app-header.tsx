@@ -3,6 +3,7 @@
 import { User } from "@supabase/supabase-js";
 import { Link, usePathname } from "@/i18n/routing";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -19,12 +20,12 @@ interface AppHeaderProps {
 const navItems = [
   {
     href: "/gigpacks",
-    label: "Gigs",
+    key: "gigs" as const,
     icon: Calendar,
   },
   {
     href: "/bands",
-    label: "Bands",
+    key: "bands" as const,
     icon: Music2,
   },
 ];
@@ -33,6 +34,8 @@ export function AppHeader({ user }: AppHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
+  const t = useTranslations("navigation");
   const [searchValue, setSearchValue] = useState(searchParams.get("search") || "");
 
   const normalizedPath =
@@ -65,7 +68,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           <Link
             href="/gigpacks"
             className="flex items-center transition-opacity hover:opacity-80"
-            aria-label="Go to GigPack home"
+            aria-label={t("homeAriaLabel")}
           >
             <AppLogo size="lg" className="h-12 sm:h-14" priority />
           </Link>
@@ -85,14 +88,17 @@ export function AppHeader({ user }: AppHeaderProps) {
                   }}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors",
+                    "inline-flex items-center gap-2 rounded-lg px-3 py-2.5 font-bold uppercase tracking-widest transition-colors",
+                    locale === "he"
+                      ? "text-sm font-black tracking-tight"
+                      : "text-xs tracking-widest",
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   )}
                 >
                   <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
+                  <span>{t(item.key)}</span>
                 </Link>
               );
             })}
@@ -106,7 +112,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search your gigs and bands..."
+              placeholder={t("searchPlaceholder")}
               value={searchValue}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9 h-9 bg-muted/50 border-border/50"
