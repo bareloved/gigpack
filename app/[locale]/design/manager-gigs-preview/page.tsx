@@ -439,7 +439,7 @@ const ManagerGigCard = ({ gig, onEdit, onShare, onDelete, onClick }: ManagerGigC
               : "bg-primary/10 text-primary border-primary/20"
           )}>
             <Calendar className="h-3.5 w-3.5" />
-            <span>{isTodayGig ? "Today" : formatDate(gig.date)}</span>
+            <span>{isTodayGig ? "Today" : formatDate(gig.date) || "TBD"}</span>
           </div>
 
           {/* Call time pill - secondary styling */}
@@ -567,7 +567,7 @@ const ListView = ({ groups, onEdit, onShare, onDelete, onClick, viewFilter }: Vi
                   <div className="flex items-center gap-3 md:w-48 shrink-0">
                     <div className="flex flex-col">
                       <span className={cn("font-bold text-lg leading-none", isTodayGig && "text-primary")}>
-                        {formatDate(gig.date)}
+                        {formatDate(gig.date) || "TBD"}
                       </span>
                       <span className="text-sm text-muted-foreground">{gig.callTime}</span>
                     </div>
@@ -654,7 +654,7 @@ const CompactView = ({ groups, onEdit, onShare, onDelete, onClick, viewFilter }:
                       <div className="flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5 shrink-0" />
                         <span className={cn(isTodayGig && "text-primary font-medium")}>
-                           {formatDate(gig.date)} • {gig.callTime}
+                           {(formatDate(gig.date) || "TBD")} • {gig.callTime}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5">

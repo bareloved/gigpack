@@ -27,6 +27,17 @@ interface RehearsalViewProps {
  * - Works across all themes
  */
 export function RehearsalView({ gigPack, openMaps, slug, locale = "en" }: RehearsalViewProps) {
+  console.log("[RehearsalView] Starting with gigPack:", {
+    id: gigPack.id,
+    title: gigPack.title,
+    date: gigPack.date,
+    accentColor: gigPack.accent_color,
+    hasLineup: !!gigPack.lineup,
+    hasSchedule: !!gigPack.schedule,
+    hasMaterials: !!gigPack.materials,
+    hasPackingChecklist: !!gigPack.packing_checklist
+  });
+
   const accentColor = gigPack.accent_color || "hsl(var(--primary))";
 
   return (
@@ -53,7 +64,17 @@ export function RehearsalView({ gigPack, openMaps, slug, locale = "en" }: Rehear
                 Date
               </div>
               <div className="text-3xl md:text-5xl font-bold" style={{ color: accentColor }}>
-                {formatDate(gigPack.date, locale)}
+                {(() => {
+                  console.log("[RehearsalView] Calling formatDate with:", gigPack.date, "locale:", locale);
+                  try {
+                    const result = formatDate(gigPack.date, locale);
+                    console.log("[RehearsalView] formatDate result:", result);
+                    return result;
+                  } catch (error) {
+                    console.error("[RehearsalView] formatDate error:", error);
+                    return "Error";
+                  }
+                })()}
               </div>
             </div>
           )}

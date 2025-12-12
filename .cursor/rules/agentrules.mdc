@@ -39,6 +39,23 @@ CRITICAL ARCHITECTURE RULES
   - `/en` is the visual reference and must remain pixel-identical unless the user says otherwise.
   - Fix `/he` layout (RTL, alignment, spacing) without changing the PDF API shape or Playwright `page.pdf` options.
 
+6) Documentation Organization (CRITICAL)
+- **ONLY** `README.md` stays in repository root.
+- **ALL** other `.md` files belong in `/docs/` subdirectories.
+- **NEVER** create new `.md` files in repository root.
+- **ALWAYS** organize docs in appropriate `/docs/*` subfolders:
+  - `/docs/overview` - high-level app docs (APP_OVERVIEW.md)
+  - `/docs/setup` - setup/run/deploy instructions
+  - `/docs/architecture` - routing, data flow, i18n architecture
+  - `/docs/features` - feature implementation notes (with subfolders like `/features/branding/`)
+  - `/docs/design` - design system, UI decisions, design summaries
+  - `/docs/i18n` - translation/RTL notes
+  - `/docs/ops` - checklists, preflight, release process
+  - `/docs/changelog` - changelog/release notes
+  - `/docs/debug` - debug notes, investigations
+- **When creating documentation**: Follow the existing structure and naming conventions.
+- **When updating README.md**: Keep it current with app state and maintain organized doc links.
+
 WORKING STYLE
 
 - First, restate the user’s task in your own words.

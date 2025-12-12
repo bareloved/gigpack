@@ -157,15 +157,17 @@ export function BoardView({ groups, onEdit, onShare, onDelete, onClick, viewFilt
                       <CardContent className="p-5 space-y-3">
                         {/* Date & Call Time pills */}
                         <div className="flex flex-wrap gap-2">
-                          <div className={cn(
-                            "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold border-2",
-                            isTodayGig
-                              ? "bg-orange-600/20 text-orange-600 border-orange-600/40 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/40"
-                              : "bg-orange-600/15 text-orange-600 border-orange-600/30 dark:bg-orange-500/15 dark:text-orange-400 dark:border-orange-500/30"
-                          )}>
-                            <Calendar className="h-3.5 w-3.5" />
-                            <span>{isTodayGig ? t("today") : formatDate(gig.date, locale)}</span>
-                          </div>
+                          {gig.date && (
+                            <div className={cn(
+                              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold border-2",
+                              isTodayGig
+                                ? "bg-orange-600/20 text-orange-600 border-orange-600/40 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/40"
+                                : "bg-orange-600/15 text-orange-600 border-orange-600/30 dark:bg-orange-500/15 dark:text-orange-400 dark:border-orange-500/30"
+                            )}>
+                              <Calendar className="h-3.5 w-3.5" />
+                              <span>{isTodayGig ? t("today") : formatDate(gig.date, locale)}</span>
+                            </div>
+                          )}
 
                           {gig.call_time && (
                               <div className="inline-flex items-center gap-1.5 rounded-lg bg-muted/60 px-2.5 py-1.5 text-sm font-medium text-muted-foreground border border-border/50">

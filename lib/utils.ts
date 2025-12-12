@@ -25,7 +25,8 @@ export function generateSlug(title: string): string {
  * @param date - Date string or Date object
  * @param locale - Locale code (default: "en")
  */
-export function formatDate(date: string | Date, locale: string = "en"): string {
+export function formatDate(date: string | Date | null, locale: string = "en"): string | null {
+  if (!date) return null;
   const d = typeof date === "string" ? new Date(date) : date;
   const localeCode = locale === "he" ? "he-IL" : "en-US";
   return d.toLocaleDateString(localeCode, {
