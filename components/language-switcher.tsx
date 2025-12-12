@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -10,8 +10,14 @@ export function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations("languageSwitcher");
 
   const toggleLocale = () => {
+    // Show loading overlay immediately
+    if (typeof window !== 'undefined' && (window as any).startNavigationLoading) {
+      (window as any).startNavigationLoading();
+    }
+    
     // Toggle between 'en' and 'he'
     const newLocale = locale === 'en' ? 'he' : 'en';
     // Remove current locale from pathname
@@ -32,7 +38,7 @@ export function LanguageSwitcher() {
             variant="ghost" 
             size="sm" 
             onClick={toggleLocale}
-            aria-label="Switch language" 
+            aria-label={t("ariaLabel")}
             className="uppercase font-semibold"
           >
             {locale}
@@ -41,7 +47,7 @@ export function LanguageSwitcher() {
         <TooltipContent>
           <p className="font-semibold">{currentLanguage}</p>
           <p className="text-xs text-muted-foreground">
-            Switch to {nextLanguage}
+            {t("switchTo", { language: nextLanguage })}
           </p>
         </TooltipContent>
       </Tooltip>

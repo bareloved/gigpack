@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
@@ -9,6 +10,7 @@ import { useEffect, useState } from "react";
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const t = useTranslations("themeToggle");
 
   // Avoid hydration mismatch by only rendering after mount
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -37,15 +39,15 @@ export function ThemeToggle() {
             ) : (
               <Moon className="h-5 w-5 text-slate-700 transition-all" />
             )}
-            <span className="sr-only">Toggle theme</span>
+            <span className="sr-only">{t("ariaLabel")}</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>
           <p className="font-semibold">
-            {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            {theme === "dark" ? t("lightMode") : t("darkMode")}
           </p>
           <p className="text-xs text-muted-foreground">
-            Switch to {theme === "dark" ? "light" : "dark"} theme
+            {t("switchTo", { theme: theme === "dark" ? "light" : "dark" })}
           </p>
         </TooltipContent>
       </Tooltip>

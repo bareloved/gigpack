@@ -11,10 +11,11 @@ export function LocaleHtmlAttributes({ locale }: LocaleHtmlAttributesProps) {
   const isRtl = rtlLocales.includes(locale as Locale);
 
   useEffect(() => {
-    // Set lang and dir attributes on the html element immediately
+    // Set lang, dir, and data-locale attributes on the html element immediately
     if (typeof document !== "undefined") {
       document.documentElement.lang = locale;
       document.documentElement.dir = isRtl ? "rtl" : "ltr";
+      document.documentElement.setAttribute("data-locale", locale);
     }
   }, [locale, isRtl]);
 
@@ -25,6 +26,7 @@ export function LocaleHtmlAttributes({ locale }: LocaleHtmlAttributesProps) {
         __html: `
           document.documentElement.lang = "${locale}";
           document.documentElement.dir = "${isRtl ? "rtl" : "ltr"}";
+          document.documentElement.setAttribute("data-locale", "${locale}");
         `,
       }}
     />

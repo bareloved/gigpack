@@ -11,11 +11,16 @@ export async function proxy(request: NextRequest) {
   
   // Skip i18n middleware for API routes, static files, and public gig pages
   // Public gig pages (/g/slug) should work without locale prefix
+  // Also skip for static assets in /public (branding, fonts, gig-fallbacks)
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon.ico") ||
-    pathname.startsWith("/g/")
+    pathname.startsWith("/g/") ||
+    pathname.startsWith("/branding/") ||
+    pathname.startsWith("/fonts/") ||
+    pathname.startsWith("/gig-fallbacks/") ||
+    pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|otf)$/)
   ) {
     return NextResponse.next();
   }
@@ -56,7 +61,7 @@ export async function proxy(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );

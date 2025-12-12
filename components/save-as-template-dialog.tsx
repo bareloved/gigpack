@@ -39,7 +39,6 @@ interface SaveAsTemplateDialogProps {
     backlineNotes: string;
     parkingNotes: string;
     paymentNotes: string;
-    gigMood?: string;
     setlistStructured?: SetlistSection[];
     packingChecklist: PackingChecklistItem[];
   };

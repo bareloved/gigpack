@@ -64,7 +64,6 @@ interface MockGig {
   id: string;
   title: string;
   bandName: string;
-  vibeTag: string; // "High energy", "Acoustic", "Club night", etc.
   date: Date;
   callTime: string; // e.g. "19:00"
   venueName: string;
@@ -90,7 +89,6 @@ const MOCK_GIGS: MockGig[] = [
     id: "1",
     title: "Sunday Morning Sessions",
     bandName: "The Worship Band",
-    vibeTag: "Acoustic",
     date: daysFromNow(0), // Today
     callTime: "09:30",
     venueName: "The Roasted Bean",
@@ -103,7 +101,6 @@ const MOCK_GIGS: MockGig[] = [
     id: "2",
     title: "EMERGENCY SUB – Read Notes!",
     bandName: "TBD",
-    vibeTag: "High energy",
     date: daysFromNow(2),
     callTime: "18:00",
     venueName: "The Dive Bar",
@@ -116,7 +113,6 @@ const MOCK_GIGS: MockGig[] = [
     id: "3",
     title: "Friday Night Jazz",
     bandName: "Blue Note Trio",
-    vibeTag: "Jazz",
     date: daysFromNow(4),
     callTime: "20:00",
     venueName: "The Blue Room",
@@ -129,7 +125,6 @@ const MOCK_GIGS: MockGig[] = [
     id: "4",
     title: "Wedding Reception",
     bandName: "The Celebrations",
-    vibeTag: "Party",
     date: daysFromNow(10),
     callTime: "16:00",
     venueName: "Grand Ballroom Hotel",
@@ -142,7 +137,6 @@ const MOCK_GIGS: MockGig[] = [
     id: "5",
     title: "Corporate Event",
     bandName: "Smooth Operators",
-    vibeTag: "Lounge",
     date: daysFromNow(15),
     callTime: "18:30",
     venueName: "Tech Campus Pavilion",
@@ -155,7 +149,6 @@ const MOCK_GIGS: MockGig[] = [
     id: "6",
     title: "Club Night Residency",
     bandName: "Electric Dreams",
-    vibeTag: "Club night",
     date: daysFromNow(22),
     callTime: "22:00",
     venueName: "Neon Underground",
@@ -168,7 +161,6 @@ const MOCK_GIGS: MockGig[] = [
     id: "7",
     title: "Last Month's Gig",
     bandName: "The Throwbacks",
-    vibeTag: "Retro",
     date: daysFromNow(-14),
     callTime: "21:00",
     venueName: "Vinyl Records Bar",
@@ -181,7 +173,6 @@ const MOCK_GIGS: MockGig[] = [
     id: "8",
     title: "Cancelled Show",
     bandName: "Weather Permitting",
-    vibeTag: "Outdoor",
     date: daysFromNow(8),
     callTime: "14:00",
     venueName: "City Park Amphitheater",
@@ -303,43 +294,6 @@ const StatusBadge = ({ status, minimal = false }: { status: MockGig["status"]; m
 };
 
 // =============================================================================
-// VIBE TAG COMPONENT
-// Stylized tag showing the gig's mood/energy
-// =============================================================================
-
-const VibeTag = ({ vibe, iconOnly = false }: { vibe: string; iconOnly?: boolean }) => {
-  // Different subtle color treatments based on vibe type
-  const vibeColors: Record<string, string> = {
-    "High energy": "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800",
-    Acoustic: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800",
-    Jazz: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
-    Party: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200 dark:bg-fuchsia-900/30 dark:text-fuchsia-400 dark:border-fuchsia-800",
-    Lounge: "bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800",
-    "Club night": "bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-800",
-    Retro: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800",
-    Outdoor: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
-  };
-
-  const colorClass = vibeColors[vibe] || "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900/30 dark:text-slate-400 dark:border-slate-800";
-
-  if (iconOnly) {
-     // Simple dot representation for compact view if needed, or just small icon
-     return null;
-  }
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium",
-        colorClass
-      )}
-    >
-      {vibe}
-    </span>
-  );
-};
-
-// =============================================================================
 // 1. LAYOUT SWITCHER
 // =============================================================================
 
@@ -455,10 +409,9 @@ const ManagerGigCard = ({ gig, onEdit, onShare, onDelete, onClick }: ManagerGigC
           <StatusBadge status={gig.status} />
         </div>
 
-        {/* Band name + Vibe tag row */}
+        {/* Band name row */}
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm text-muted-foreground font-medium">{gig.bandName}</span>
-          <VibeTag vibe={gig.vibeTag} />
         </div>
 
         {/* Manager control line */}
@@ -625,7 +578,6 @@ const ListView = ({ groups, onEdit, onShare, onDelete, onClick, viewFilter }: Vi
                   <div className="flex-1 min-w-0 grid gap-1">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-base truncate">{gig.title}</span>
-                      <VibeTag vibe={gig.vibeTag} />
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span className="font-medium text-foreground/80">{gig.bandName}</span>

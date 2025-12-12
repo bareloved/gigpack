@@ -1,39 +1,27 @@
 "use client";
 
-import { SVGProps, useId } from "react";
+import { SVGProps } from "react";
 
 /**
  * Hand-drawn SVG accent components for artistic, DIY aesthetic
- * Each component has multiple path variations for organic, non-repetitive look
  * 
- * Uses useId() to create deterministic variation based on component instance.
- * This avoids hydration mismatches while still providing visual variety.
+ * Note: Uses fixed variations to avoid hydration mismatches between
+ * server and client rendering. Multiple path options are kept for
+ * future use or manual variation selection via props.
  */
 
 interface HandDrawnProps extends SVGProps<SVGSVGElement> {
   className?: string;
   color?: string;
-}
-
-// Helper to get a stable variation index from React's useId
-function useStableVariation(maxVariations: number): number {
-  const id = useId();
-  // Hash the id string to get a number
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 5) - hash) + id.charCodeAt(i);
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash) % maxVariations;
+  /** Optional variation index (0-based) to select a specific path style */
+  variation?: number;
 }
 
 /**
  * Hand-drawn squiggle line - replaces straight line accents
  * Used in section headers
  */
-export function HandDrawnSquiggle({ className = "", color = "currentColor", ...props }: HandDrawnProps) {
-  const variation = useStableVariation(4);
-  
+export function HandDrawnSquiggle({ className = "", color = "currentColor", variation = 0, ...props }: HandDrawnProps) {
   const paths = [
     // Variation 1: wavy squiggle
     "M2,8 Q10,2 18,8 T34,8",
@@ -44,6 +32,7 @@ export function HandDrawnSquiggle({ className = "", color = "currentColor", ...p
     // Variation 4: casual curve
     "M2,6 Q12,12 22,6 Q28,3 34,8",
   ];
+  const safeVariation = Math.abs(variation) % paths.length;
 
   return (
     <svg
@@ -56,7 +45,7 @@ export function HandDrawnSquiggle({ className = "", color = "currentColor", ...p
       {...props}
     >
       <path
-        d={paths[variation]}
+        d={paths[safeVariation]}
         stroke={color}
         strokeWidth="2.5"
         strokeLinecap="round"
@@ -69,9 +58,7 @@ export function HandDrawnSquiggle({ className = "", color = "currentColor", ...p
 /**
  * Hand-drawn arrow - points to important elements
  */
-export function HandDrawnArrow({ className = "", color = "currentColor", ...props }: HandDrawnProps) {
-  const variation = useStableVariation(3);
-  
+export function HandDrawnArrow({ className = "", color = "currentColor", variation = 0, ...props }: HandDrawnProps) {
   const paths = [
     // Variation 1: curved arrow
     "M2,12 Q8,8 14,12 L14,12 L11,10 M14,12 L11,14",
@@ -80,6 +67,7 @@ export function HandDrawnArrow({ className = "", color = "currentColor", ...prop
     // Variation 3: bouncy arrow
     "M2,10 Q6,14 10,10 Q12,8 16,10 M16,10 L13,8 M16,10 L13,12",
   ];
+  const safeVariation = Math.abs(variation) % paths.length;
 
   return (
     <svg
@@ -92,7 +80,7 @@ export function HandDrawnArrow({ className = "", color = "currentColor", ...prop
       {...props}
     >
       <path
-        d={paths[variation]}
+        d={paths[safeVariation]}
         stroke={color}
         strokeWidth="2"
         strokeLinecap="round"
@@ -105,9 +93,7 @@ export function HandDrawnArrow({ className = "", color = "currentColor", ...prop
 /**
  * Hand-drawn underline - appears on hover for links
  */
-export function HandDrawnUnderline({ className = "", color = "currentColor", width = "100%", ...props }: HandDrawnProps & { width?: string | number }) {
-  const variation = useStableVariation(3);
-  
+export function HandDrawnUnderline({ className = "", color = "currentColor", width = "100%", variation = 0, ...props }: HandDrawnProps & { width?: string | number }) {
   const paths = [
     // Variation 1: wavy underline
     "M0,4 Q25,8 50,4 T100,4",
@@ -116,6 +102,7 @@ export function HandDrawnUnderline({ className = "", color = "currentColor", wid
     // Variation 3: casual swoop
     "M0,5 Q30,3 60,6 Q80,8 100,5",
   ];
+  const safeVariation = Math.abs(variation) % paths.length;
 
   return (
     <svg
@@ -130,7 +117,7 @@ export function HandDrawnUnderline({ className = "", color = "currentColor", wid
       {...props}
     >
       <path
-        d={paths[variation]}
+        d={paths[safeVariation]}
         stroke={color}
         strokeWidth="2"
         strokeLinecap="round"
@@ -143,9 +130,7 @@ export function HandDrawnUnderline({ className = "", color = "currentColor", wid
 /**
  * Hand-drawn corner bracket - decorates card corners
  */
-export function HandDrawnCornerBracket({ className = "", color = "currentColor", ...props }: HandDrawnProps) {
-  const variation = useStableVariation(3);
-  
+export function HandDrawnCornerBracket({ className = "", color = "currentColor", variation = 0, ...props }: HandDrawnProps) {
   const paths = [
     // Variation 1: curved L bracket
     "M20,2 Q4,2 2,2 Q2,4 2,18",
@@ -154,6 +139,7 @@ export function HandDrawnCornerBracket({ className = "", color = "currentColor",
     // Variation 3: loose bracket
     "M20,3 Q6,2 3,3 Q2,4 2,8 L2,22",
   ];
+  const safeVariation = Math.abs(variation) % paths.length;
 
   return (
     <svg
@@ -166,7 +152,7 @@ export function HandDrawnCornerBracket({ className = "", color = "currentColor",
       {...props}
     >
       <path
-        d={paths[variation]}
+        d={paths[safeVariation]}
         stroke={color}
         strokeWidth="2.5"
         strokeLinecap="round"
@@ -183,10 +169,9 @@ export function HandDrawnCircle({
   className = "", 
   color = "currentColor", 
   children,
+  variation = 0,
   ...props 
 }: HandDrawnProps & { children?: React.ReactNode }) {
-  const variation = useStableVariation(4);
-  
   const paths = [
     // Variation 1: slightly egg-shaped
     "M12,2 Q18,4 20,12 Q18,20 12,22 Q6,20 4,12 Q6,4 12,2 Z",
@@ -197,6 +182,7 @@ export function HandDrawnCircle({
     // Variation 4: casual oval
     "M12,3 Q16,3 19,9 Q21,12 19,15 Q16,21 12,21 Q8,21 5,15 Q3,12 5,9 Q8,3 12,3 Z",
   ];
+  const safeVariation = Math.abs(variation) % paths.length;
 
   return (
     <svg
@@ -209,7 +195,7 @@ export function HandDrawnCircle({
       {...props}
     >
       <path
-        d={paths[variation]}
+        d={paths[safeVariation]}
         stroke={color}
         strokeWidth="2"
         strokeLinecap="round"
@@ -234,9 +220,7 @@ export function HandDrawnCircle({
 /**
  * Hand-drawn star - decorative accent
  */
-export function HandDrawnStar({ className = "", color = "currentColor", ...props }: HandDrawnProps) {
-  const variation = useStableVariation(3);
-  
+export function HandDrawnStar({ className = "", color = "currentColor", variation = 0, ...props }: HandDrawnProps) {
   const paths = [
     // Variation 1: classic 5-point star
     "M12,2 L14,9 L21,9 L16,13 L18,20 L12,15 L6,20 L8,13 L3,9 L10,9 Z",
@@ -245,6 +229,7 @@ export function HandDrawnStar({ className = "", color = "currentColor", ...props
     // Variation 3: hand-drawn wobbly
     "M12,2 L13,8 L14,9 L21,10 L16,12 L17,13 L18,19 L12,16 L11,15 L6,19 L7,13 L8,12 L3,10 L10,9 L11,8 Z",
   ];
+  const safeVariation = Math.abs(variation) % paths.length;
 
   return (
     <svg
@@ -257,7 +242,7 @@ export function HandDrawnStar({ className = "", color = "currentColor", ...props
       {...props}
     >
       <path
-        d={paths[variation]}
+        d={paths[safeVariation]}
         stroke={color}
         strokeWidth="1.5"
         strokeLinecap="round"
@@ -272,9 +257,7 @@ export function HandDrawnStar({ className = "", color = "currentColor", ...props
 /**
  * Hand-drawn doodle - various small decorative elements
  */
-export function HandDrawnDoodle({ className = "", color = "currentColor", type = "sparkle", ...props }: HandDrawnProps & { type?: "sparkle" | "note" | "heart" }) {
-  const variation = useStableVariation(2);
-  
+export function HandDrawnDoodle({ className = "", color = "currentColor", type = "sparkle", variation = 0, ...props }: HandDrawnProps & { type?: "sparkle" | "note" | "heart" }) {
   const sparkles = [
     "M12,2 L13,11 L12,12 L11,11 Z M2,12 L11,13 L12,12 L11,11 Z M12,22 L13,13 L12,12 L11,13 Z M22,12 L13,13 L12,12 L13,11 Z",
     "M12,3 L12,11 M3,12 L11,12 M12,21 L12,13 M21,12 L13,12 M8,8 L10,10 M16,8 L14,10 M16,16 L14,14 M8,16 L10,14",
@@ -291,6 +274,7 @@ export function HandDrawnDoodle({ className = "", color = "currentColor", type =
   ];
 
   const paths = type === "sparkle" ? sparkles : type === "note" ? notes : hearts;
+  const safeVariation = Math.abs(variation) % paths.length;
 
   return (
     <svg
@@ -303,7 +287,7 @@ export function HandDrawnDoodle({ className = "", color = "currentColor", type =
       {...props}
     >
       <path
-        d={paths[variation]}
+        d={paths[safeVariation]}
         stroke={color}
         strokeWidth="1.5"
         strokeLinecap="round"

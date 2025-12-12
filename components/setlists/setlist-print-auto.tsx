@@ -57,6 +57,79 @@ export type SetlistAutoPrintProps = {
   align: "left" | "right" | "center";
 };
 
+// Font sizing configuration - makes magic numbers explicit and configurable
+const FONT_SIZING_CONFIG = {
+  baseFontSize: 36,
+  minFontSize: 22,
+  maxFontSize: 50.7,
+  headerMargin: 8,
+
+  // Scaling factors for different song counts
+  // These were derived from the original "boost" calculations
+  scalingFactors: {
+    small: { maxCount: 9, factor: 1.0 },     // 1-9 songs
+    medium: { maxCount: 16, factor: 1.15 },  // 10-16 songs
+    large: { maxCount: 22, factor: 1.22 },   // 17-22 songs
+    xlarge: { maxCount: 24, factor: 1.01 },  // 23-24 songs
+    xxlarge: { maxCount: Infinity, factor: 0.96 }, // 25+ songs
+  },
+
+  // Special cases for very specific counts
+  specialCases: {
+    23: 0.98,
+    24: 1.04,
+    25: { maxSize: 38 },
+  },
+} as const;
+
+/**
+ * Calculate optimal font size for setlist based on available space and content
+ */
+function calculateOptimalFontSize(
+  containerHeight: number,
+  headerHeight: number,
+  listHeight: number,
+  songCount: number
+): number {
+  const availableHeight = Math.max(0, containerHeight - headerHeight - FONT_SIZING_CONFIG.headerMargin);
+
+  if (availableHeight <= 0 || listHeight <= 0) {
+    return FONT_SIZING_CONFIG.baseFontSize;
+  }
+
+  const rawScale = availableHeight / listHeight;
+
+  // Get scaling factor based on song count
+  let scalingFactor: number = FONT_SIZING_CONFIG.scalingFactors.small.factor;
+  for (const [key, config] of Object.entries(FONT_SIZING_CONFIG.scalingFactors)) {
+    if (songCount <= config.maxCount) {
+      scalingFactor = config.factor;
+      break;
+    }
+  }
+
+  // Apply special case adjustments
+  if (songCount in FONT_SIZING_CONFIG.specialCases) {
+    const specialCase = FONT_SIZING_CONFIG.specialCases[songCount as keyof typeof FONT_SIZING_CONFIG.specialCases];
+    if (typeof specialCase === 'number') {
+      scalingFactor = specialCase;
+    }
+  }
+
+  let fontSize = FONT_SIZING_CONFIG.baseFontSize * rawScale * scalingFactor;
+
+  // Apply clamping
+  fontSize = Math.max(FONT_SIZING_CONFIG.minFontSize, Math.min(fontSize, FONT_SIZING_CONFIG.maxFontSize));
+
+  // Special case for 25+ songs
+  if (songCount >= 25) {
+    const maxForLargeSetlists = FONT_SIZING_CONFIG.specialCases[25]?.maxSize || 38;
+    fontSize = Math.min(fontSize, maxForLargeSetlists);
+  }
+
+  return fontSize;
+}
+
 export function SetlistAutoPrint({
   title,
   location,
@@ -69,15 +142,15 @@ export function SetlistAutoPrint({
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const headerRef = React.useRef<HTMLDivElement | null>(null);
   const listRef = React.useRef<HTMLOListElement | null>(null);
-  const BASE_FONT_PX = 36;
-  const [fontSizePx, setFontSizePx] = React.useState<number>(BASE_FONT_PX);
+
+  const [fontSizePx, setFontSizePx] = React.useState<number>(FONT_SIZING_CONFIG.baseFontSize);
   const [hasSized, setHasSized] = React.useState(false);
+
   const songLines = lines.filter((line) => {
     const trimmed = line.trim();
     return trimmed !== "" && trimmed !== "-";
   });
   const songCount = songLines.length;
-  const lineCount = songCount;
   const isRTL = direction === "rtl";
   const shouldTitleCase = !isRTL;
 
@@ -90,61 +163,18 @@ export function SetlistAutoPrint({
     const headerRect = headerRef.current.getBoundingClientRect();
     const listRect = listRef.current.getBoundingClientRect();
 
-    const totalHeight = containerRect.height;
-    const headerHeight = headerRect.height;
-    const listHeight = listRect.height;
+    const optimalFontSize = calculateOptimalFontSize(
+      containerRect.height,
+      headerRect.height,
+      listRect.height,
+      songCount
+    );
 
-    const rawAvailable = totalHeight - headerHeight;
-    const availableHeight = Math.max(0, rawAvailable - 8);
-    if (availableHeight <= 0 || listHeight <= 0) {
-      return;
-    }
-
-    const rawScale = availableHeight / listHeight;
-    const fillRatio = availableHeight / listHeight;
-
-    let boost = 1;
-    if (lineCount <= 9) {
-      boost = 1.0;
-    } else if (lineCount <= 13) {
-      boost = 1.08;
-    } else if (lineCount <= 16) {
-      boost = 1.12;
-    } else if (lineCount <= 20) {
-      boost = 1.24;
-    } else if (lineCount <= 22) {
-      boost = 1.10;
-    } else if (lineCount === 23) {
-      boost = 0.98;
-    } else if (lineCount === 24) {
-      boost = 1.04;
-    } else {
-      boost = 0.96;
-    }
-
-    const scale = rawScale * boost;
-    let newFontSize = BASE_FONT_PX * scale;
-
-    // Global clamp
-    newFontSize = Math.max(22, Math.min(newFontSize, 90));
-
-    // Hard max based on 13-line perfect size
-    const MAX_FONT_PX = 50.7;
-    if (newFontSize > MAX_FONT_PX) {
-      newFontSize = MAX_FONT_PX;
-    }
-
-    // Extra safety for 25 songs
-    if (lineCount === 25 && newFontSize > 38) {
-      newFontSize = 38;
-    }
-
-    // Auto-size calculation complete
-    setFontSizePx(newFontSize);
+    setFontSizePx(optimalFontSize);
     setHasSized(true);
-  }, [lines.length, hasSized]);
+  }, [lines.length, hasSized, songCount]);
 
-  const lineHeight = lineCount >= 23 ? 1.05 : 1.1;
+  const lineHeight = songCount >= 23 ? 1.05 : 1.1;
 
   const rawTitle = title?.trim() || "Setlist";
   const displayTitle = shouldTitleCase ? toTitleCaseEn(rawTitle) : rawTitle;

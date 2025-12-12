@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { GigPack } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Music, Users, Shirt, Package, ParkingCircle, DollarSign, Paperclip, ExternalLink } from "lucide-react";
-import { formatDate } from "@/lib/utils";
-import { PackingChecklist } from "@/components/packing-checklist";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Calendar, Clock, MapPin, Music, Users, Shirt, Package, ParkingCircle, DollarSign, Paperclip, ExternalLink, Heart, Mic, Building, Beer, Coffee, Tent, Headphones, Star, PartyPopper, Guitar, Drum, Piano, Volume2, Radio } from "lucide-react";
+import { classifyGigVisualTheme, pickFallbackImageForTheme } from "@/lib/gig-visual-theme";
 
 interface MinimalLayoutProps {
   gigPack: Omit<GigPack, "internal_notes" | "owner_id">;
@@ -16,145 +17,449 @@ interface MinimalLayoutProps {
 }
 
 /**
- * Minimal theme layout
- * Clean, modern design with lots of whitespace and subtle accents
+ * Unified minimal theme layout - Flagship design
+ * Modern, product-like design with clear hierarchy and efficient use of space
  * Supports branding: logo, hero image, accent color, poster skin
  */
 export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: MinimalLayoutProps) {
+  const [setlistExpanded, setSetlistExpanded] = useState(false);
   
   // Get branding values with fallbacks
-  const accentColor = gigPack.accent_color || null;
+  const accentColor = gigPack.accent_color || "hsl(var(--primary))";
   const posterSkin = gigPack.poster_skin || "clean";
   
   // Apply accent color as CSS variable if provided
   const customStyle = accentColor ? {
     "--custom-accent": accentColor,
   } as React.CSSProperties : {};
+
+  // Determine background image (hero or fallback)
+  const backgroundImage = gigPack.hero_image_url || pickFallbackImageForTheme(
+    classifyGigVisualTheme({ gig: gigPack as GigPack }),
+    gigPack.id
+  );
+
+  // Get icon for gig type
+  const getGigTypeIcon = (gigType: string | null) => {
+    switch (gigType) {
+      case "wedding": return <PartyPopper className="h-3 w-3" />;
+      case "club_show": return <Mic className="h-3 w-3" />;
+      case "corporate": return <Building className="h-3 w-3" />;
+      case "bar_gig": return <Beer className="h-3 w-3" />;
+      case "coffee_house": return <Coffee className="h-3 w-3" />;
+      case "festival": return <Tent className="h-3 w-3" />;
+      case "rehearsal": return <Headphones className="h-3 w-3" />;
+      default: return <Star className="h-3 w-3" />;
+    }
+  };
+
+  // Get color classes for gig type badge
+  const getGigTypeBadgeColors = (gigType: string | null) => {
+    switch (gigType) {
+      case "wedding": return "bg-pink-500/20 border-pink-300/30 text-pink-100";
+      case "club_show": return "bg-purple-500/20 border-purple-300/30 text-purple-100";
+      case "corporate": return "bg-blue-500/20 border-blue-300/30 text-blue-100";
+      case "bar_gig": return "bg-green-500/20 border-green-300/30 text-green-100";
+      case "coffee_house": return "bg-amber-500/20 border-amber-300/30 text-amber-100";
+      case "festival": return "bg-orange-500/20 border-orange-300/30 text-orange-100";
+      case "rehearsal": return "bg-slate-500/20 border-slate-300/30 text-slate-100";
+      default: return "bg-gray-500/20 border-gray-300/30 text-gray-100";
+    }
+  };
+
+  // Get display label for gig type
+  const getGigTypeLabel = (gigType: string | null) => {
+    switch (gigType) {
+      case "wedding": return "Wedding";
+      case "club_show": return "Club Show";
+      case "corporate": return "Corporate";
+      case "bar_gig": return "Bar Gig";
+      case "coffee_house": return "Coffee House";
+      case "festival": return "Festival";
+      case "rehearsal": return "Rehearsal";
+      case "other": return "Other";
+      default: return gigType || "";
+    }
+  };
+
+  // Helper to get initials from name
+  const getInitials = (name: string | null) => {
+    if (!name) return "??";
+    return name
+      .split(" ")
+      .map(word => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Get instrument icon based on role
+  const getInstrumentIcon = (role: string) => {
+    const lowerRole = role.toLowerCase();
+
+    // String instruments
+    if (lowerRole.includes('guitar') || lowerRole.includes('lead') || lowerRole.includes('rhythm')) {
+      return <Guitar className="h-4 w-4" />;
+    }
+    if (lowerRole.includes('bass') || lowerRole.includes('electric bass') || lowerRole.includes('upright bass')) {
+      return <Radio className="h-4 w-4" />; // Using Radio as bass representation
+    }
+    if (lowerRole.includes('violin') || lowerRole.includes('fiddle') || lowerRole.includes('strings') || lowerRole.includes('cello')) {
+      return <Music className="h-4 w-4" />;
+    }
+
+    // Percussion
+    if (lowerRole.includes('drum') || lowerRole.includes('percussion') || lowerRole.includes('drummer')) {
+      return <Drum className="h-4 w-4" />;
+    }
+
+    // Keyboard
+    if (lowerRole.includes('piano') || lowerRole.includes('keyboard') || lowerRole.includes('keys')) {
+      return <Piano className="h-4 w-4" />;
+    }
+
+    // Brass/Wind instruments
+    if (lowerRole.includes('trumpet') || lowerRole.includes('horn') || lowerRole.includes('brass') ||
+        lowerRole.includes('sax') || lowerRole.includes('woodwind') || lowerRole.includes('reed')) {
+      return <Volume2 className="h-4 w-4" />;
+    }
+
+    // Vocals
+    if (lowerRole.includes('vocal') || lowerRole.includes('singer') || lowerRole.includes('voice') || lowerRole.includes('lead singer')) {
+      return <Mic className="h-4 w-4" />;
+    }
+
+    // Default fallback
+    return <Music className="h-4 w-4" />;
+  };
+
+  // Format date helper
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return null;
+    try {
+      const date = new Date(dateString);
+      if (locale === 'he') {
+        return date.toLocaleDateString('he-IL', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      }
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Setlist helpers (collapsed preview + teaser fade)
+  const setlistLines = (gigPack.setlist || "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  const SETLIST_COLLAPSED_VISIBLE = 3; // show 3 clearly
+  const SETLIST_TEASER_VISIBLE = 1; // show 4th as a faded teaser
+
+  const hasMoreSetlist = setlistLines.length > SETLIST_COLLAPSED_VISIBLE;
+  const visibleSetlistLines = setlistExpanded
+    ? setlistLines
+    : setlistLines.slice(
+        0,
+        Math.min(setlistLines.length, SETLIST_COLLAPSED_VISIBLE + SETLIST_TEASER_VISIBLE)
+      );
+
+  const remainingSetlistCount = Math.max(0, setlistLines.length - SETLIST_COLLAPSED_VISIBLE);
+
+  const splitSetlistLine = (line: string) => {
+    // Prefer em-dash separator for "Title — Artist / Key" style
+    if (line.includes(" — ")) {
+      const [title, ...rest] = line.split(" — ");
+      return { title: title.trim(), meta: rest.join(" — ").trim() };
+    }
+    // Fallback separator for "Title - Artist / Key" style
+    if (line.includes(" - ")) {
+      const [title, ...rest] = line.split(" - ");
+      return { title: title.trim(), meta: rest.join(" - ").trim() };
+    }
+    return { title: line, meta: "" };
+  };
   
   return (
     <div className={`min-h-screen poster-skin-${posterSkin}`} style={customStyle}>
-      <div className="container max-w-4xl mx-auto px-4 py-12">
-        {/* Hero Image (optional) */}
-        {gigPack.hero_image_url && (
-          <div className="hero-image-container rounded-t-lg mb-0 h-48 md:h-64">
-            <img src={gigPack.hero_image_url} alt="Hero" className="hero-image" />
-            <div className="hero-overlay"></div>
+      <div className={`container max-w-6xl mx-auto px-4 py-6 md:py-8 ${locale === 'he' ? 'rtl' : ''}`}>
+        {/* Header Area with Background Image */}
+        <div className="relative min-h-[400px] md:min-h-[500px] rounded-lg overflow-hidden mb-8 shadow-lg">
+          {/* Background Image */}
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${backgroundImage})` }}
+          />
+
+          {/* Gradient/Blur Scrim for Readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30 backdrop-blur-[1px]" />
+
+          {/* Logo overlay (top-left) */}
+          {gigPack.band_logo_url && (
+            <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10">
+              <div className="bg-white/95 dark:bg-black/80 p-2 rounded-lg shadow-lg">
+                <img src={gigPack.band_logo_url} alt="Band logo" className="band-logo-small" />
+              </div>
           </div>
         )}
 
-        {/* Main Card */}
-        <Card className={`border shadow-lg bg-card/90 backdrop-blur-sm ${gigPack.hero_image_url ? 'rounded-t-none' : ''}`}>
-          <div className="p-8 md:p-12 space-y-10">
-            {/* Header with optional logo */}
-            <div className="space-y-4 text-center border-b pb-8">
-              {gigPack.band_logo_url && (
-                <div className="flex justify-center mb-4">
-                  <img src={gigPack.band_logo_url} alt="Band logo" className="band-logo" />
+          {/* Main Content Overlay */}
+          <div className="relative z-10 flex flex-col justify-center items-center text-center text-white px-4 py-12 md:py-16 min-h-full">
+            {/* Scrim Layer - Feathered Background Behind Text */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                top: '-60px',
+                left: '-60px',
+                right: '-60px',
+                bottom: '-60px',
+                backdropFilter: 'blur(16px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                background: 'rgba(0, 0, 0, 0.3)',
+                maskImage: 'radial-gradient(ellipse 60% 50% at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0.9) 45%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0.1) 90%, rgba(0,0,0,0) 100%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0.9) 45%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0.1) 90%, rgba(0,0,0,0) 100%)',
+                zIndex: -1,
+              }}
+            />
+
+            {/* Gig Type Badge - Upper Right Corner */}
+            {gigPack.gig_type && gigPack.gig_type !== "other" && (
+              <div className="absolute top-6 right-6 z-20">
+                <Badge
+                  variant="secondary"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold backdrop-blur-sm shadow-lg ${getGigTypeBadgeColors(gigPack.gig_type)}`}
+                >
+                  {getGigTypeIcon(gigPack.gig_type)}
+                  {getGigTypeLabel(gigPack.gig_type)}
+                </Badge>
+              </div>
+            )}
+
+            {/* Text Content Container - Fully Transparent */}
+            <div className="relative px-6 py-8 md:px-8 md:py-10 max-w-4xl w-full mx-4">
+              {/* Title */}
+              <div className="mb-6">
+                <div className="flex flex-col items-center justify-center mb-4">
+                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight drop-shadow-lg">
+                    {gigPack.title}
+                  </h1>
                 </div>
-              )}
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                {gigPack.title}
-              </h1>
               {gigPack.band_name && (
-                <p className="text-xl text-muted-foreground">
+                  <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-white/90 drop-shadow-md">
                   {gigPack.band_name}
                 </p>
               )}
-              {/* Gig Mood Tag */}
-              {gigPack.gig_mood && (
-                <div className="flex justify-center pt-2">
-                  <span 
-                    className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border"
-                    style={accentColor ? { 
-                      backgroundColor: accentColor + '15',
-                      borderColor: accentColor + '40',
-                      color: accentColor 
-                    } : {
-                      backgroundColor: 'hsl(var(--primary) / 0.1)',
-                      borderColor: 'hsl(var(--primary) / 0.2)',
-                      color: 'hsl(var(--primary))'
-                    }}
-                  >
-                    {gigPack.gig_mood}
-                  </span>
-                </div>
-              )}
+              </div>
+
+              {/* Date */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-6 text-lg md:text-xl">
+                {gigPack.date && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-white/90" />
+                    <span className="font-semibold text-white drop-shadow-sm">{formatDate(gigPack.date)}</span>
+                  </div>
+                )}
             </div>
 
-            {/* Date & Time */}
-            {(gigPack.date || gigPack.call_time || gigPack.on_stage_time) && (
-              <div className="space-y-4">
-                {gigPack.date && (
-                  <div className="flex items-center justify-center gap-2 text-lg">
-                    <Calendar className="h-5 w-5" style={accentColor ? { color: accentColor } : {}} />
-                    <span className="font-semibold">{formatDate(gigPack.date, locale)}</span>
-                  </div>
-                )}
-                {(gigPack.call_time || gigPack.on_stage_time) && (
-                  <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-                    {gigPack.call_time && (
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        <span>Call: {gigPack.call_time}</span>
-                      </div>
-                    )}
-                    {gigPack.on_stage_time && (
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        <span>On Stage: {gigPack.on_stage_time}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Venue */}
-            {(gigPack.venue_name || gigPack.venue_address) && (
-              <div className="space-y-3 pt-6 border-t" style={accentColor ? { borderColor: accentColor + '40' } : {}}>
-                <div className="flex items-center gap-2 text-sm uppercase tracking-wider font-semibold" style={accentColor ? { color: accentColor } : {}}>
-                  <MapPin className="h-4 w-4" />
-                  <span>Venue</span>
-                </div>
-                <div className="space-y-2">
+              {/* Venue */}
+              {(gigPack.venue_name || gigPack.venue_address) && (
+                <div className="mb-6">
                   {gigPack.venue_name && (
-                    <div className="text-xl font-semibold">{gigPack.venue_name}</div>
+                    <div className="text-xl md:text-2xl font-bold text-white drop-shadow-md mb-1">
+                      {gigPack.venue_name}
+                    </div>
                   )}
                   {gigPack.venue_address && (
-                    <div className="text-muted-foreground">{gigPack.venue_address}</div>
+                    <div className="text-white/90 text-sm md:text-base drop-shadow-sm">
+                      {gigPack.venue_address}
+                    </div>
                   )}
-                  {gigPack.venue_maps_url && (
-                    <Button 
-                      onClick={openMaps} 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-2"
-                      style={accentColor ? { borderColor: accentColor, color: accentColor } : {}}
-                    >
-                      <MapPin className="mr-2 h-4 w-4" />
-                      Open in Maps
-                    </Button>
-                  )}
+                </div>
+              )}
+
+              {/* Quick Actions */}
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                {gigPack.venue_maps_url && (
+                  <Button
+                    onClick={openMaps}
+                    variant="secondary"
+                    size="sm"
+                    className="gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm border-white/30 text-white shadow-lg"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    Open Maps
+                  </Button>
+                )}
+                {gigPack.call_time && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="gap-2 bg-white/20 backdrop-blur-sm border-white/30 text-white shadow-lg transition-colors"
+                    style={{
+                      '--tw-bg-opacity': '0.2'
+                    } as React.CSSProperties}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = accentColor;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                    }}
+                    onClick={() => navigator.clipboard?.writeText(gigPack.call_time || '')}
+                  >
+                    <Clock className="h-4 w-4" />
+                    Call: {gigPack.call_time}
+                  </Button>
+                )}
+                {gigPack.on_stage_time && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="gap-2 bg-white/20 backdrop-blur-sm border-white/30 text-white shadow-lg transition-colors"
+                    style={{
+                      '--tw-bg-opacity': '0.2'
+                    } as React.CSSProperties}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = accentColor;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                    }}
+                    onClick={() => navigator.clipboard?.writeText(gigPack.on_stage_time || '')}
+                  >
+                    <Music className="h-4 w-4" />
+                    Stage: {gigPack.on_stage_time}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content - 2 Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column - Actionable Items */}
+          <div className="space-y-6">
+
+            {/* Schedule */}
+            {gigPack.schedule && gigPack.schedule.length > 0 && (
+              <div className="bg-card border rounded-lg p-6 shadow-sm">
+                <div className={`flex items-center gap-3 mb-4 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                  <Clock className="h-5 w-5" style={{ color: accentColor }} />
+                  <h3 className="font-semibold text-lg">Schedule</h3>
+                </div>
+                <div className="space-y-3">
+                  {/* Custom schedule items */}
+                  {gigPack.schedule.sort((a, b) => {
+                    // Sort by time, nulls at end
+                    if (!a.time && !b.time) return 0;
+                    if (!a.time) return 1;
+                    if (!b.time) return -1;
+                    return a.time.localeCompare(b.time);
+                  }).map((item) => (
+                    <div key={item.id} className={`flex items-center justify-between p-3 bg-muted/30 rounded-lg ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                      <span className="font-medium">{item.label}</span>
+                      <span className="text-base font-semibold text-muted-foreground">{item.time}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
+            {/* Logistics */}
+            {(gigPack.dress_code || gigPack.backline_notes || gigPack.parking_notes) && (
+              <div className="space-y-4">
+
+                {/* Logistics */}
+                {(gigPack.dress_code || gigPack.backline_notes || gigPack.parking_notes) && (
+                  <div className="bg-card border rounded-lg p-6 shadow-sm">
+                    <div className={`flex items-center gap-3 mb-4 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                      <Package className="h-5 w-5" style={{ color: accentColor }} />
+                      <h3 className="font-semibold text-lg">Logistics</h3>
+                    </div>
+                    <div className="space-y-4">
+                      {gigPack.dress_code && (
+                        <div className={`flex gap-3 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                          <Shirt className="h-4 w-4 mt-1 flex-shrink-0 text-muted-foreground" />
+                          <div className={`${locale === 'he' ? 'text-right' : ''}`}>
+                            <div className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-1">Dress Code</div>
+                            <div className="text-sm">{gigPack.dress_code}</div>
+                          </div>
+                        </div>
+                      )}
+                      {gigPack.backline_notes && (
+                        <div className={`flex gap-3 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                          <Package className="h-4 w-4 mt-1 flex-shrink-0 text-muted-foreground" />
+                          <div className={`${locale === 'he' ? 'text-right' : ''}`}>
+                            <div className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-1">Gear</div>
+                            <div className="text-sm whitespace-pre-wrap">{gigPack.backline_notes}</div>
+                          </div>
+                  </div>
+                )}
+                      {gigPack.parking_notes && (
+                        <div className={`flex gap-3 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                          <ParkingCircle className="h-4 w-4 mt-1 flex-shrink-0 text-muted-foreground" />
+                          <div className={`${locale === 'he' ? 'text-right' : ''}`}>
+                            <div className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-1">Parking</div>
+                            <div className="text-sm whitespace-pre-wrap">{gigPack.parking_notes}</div>
+                          </div>
+                      </div>
+                    )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Packing Checklist - Coming Soon */}
+            <div className="text-center py-2">
+              <p className="text-muted-foreground/60 text-xs italic">
+                Smart packing checklist coming soon...
+              </p>
+            </div>
+          </div>
+
+          {/* Right Column - Content */}
+          <div className="space-y-6">
             {/* Lineup */}
             {gigPack.lineup && gigPack.lineup.length > 0 && (
-              <div className="space-y-4 pt-6 border-t" style={accentColor ? { borderColor: accentColor + '40' } : {}}>
-                <div className="flex items-center gap-2 text-sm uppercase tracking-wider font-semibold" style={accentColor ? { color: accentColor } : {}}>
-                  <Users className="h-4 w-4" />
-                  <span>Who&apos;s Playing</span>
+              <div className="bg-card border rounded-lg p-6 shadow-sm">
+                <div className={`flex items-center gap-3 mb-4 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                  <Users className="h-5 w-5" style={{ color: accentColor }} />
+                  <h3 className="font-semibold text-lg">Who&apos;s Playing</h3>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-3">
                   {gigPack.lineup.map((member, index) => (
-                    <div key={index} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="font-semibold">{member.role}</div>
-                      {member.name && (
-                        <div className="text-sm text-muted-foreground mt-1">{member.name}</div>
-                      )}
+                    <div key={index} className="p-3 bg-muted/30 rounded-lg">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          {member.name && (
+                            <Avatar size="lg" className="shrink-0">
+                              <AvatarFallback className="text-base font-semibold bg-primary/10 text-primary">
+                                {getInitials(member.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
+                          {member.name && (
+                            <div className="font-semibold min-w-0 truncate">{member.name}</div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+                          {getInstrumentIcon(member.role)}
+                          <span>{member.role}</span>
+                        </div>
+                      </div>
                       {member.notes && (
-                        <div className="text-sm text-muted-foreground mt-2 italic">{member.notes}</div>
+                        <div className="text-sm text-muted-foreground mt-3 italic pl-11">{member.notes}</div>
                       )}
                     </div>
                   ))}
@@ -163,44 +468,116 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
             )}
 
             {/* Setlist */}
-            {gigPack.setlist && (
-              <div className="space-y-4 pt-6 border-t" style={accentColor ? { borderColor: accentColor + '40' } : {}}>
-                <div className="flex items-center gap-2 text-sm uppercase tracking-wider font-semibold" style={accentColor ? { color: accentColor } : {}}>
-                  <Music className="h-4 w-4" />
-                  <span>Setlist</span>
-                </div>
-                <div className="bg-muted/30 border rounded-lg p-6">
-                  <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
-                    {gigPack.setlist.split('\n').map((line, index) => (
-                      line.trim() ? (
-                        <div key={index} className="flex gap-3 py-1.5 border-b border-dashed last:border-0">
-                          <span className="font-semibold min-w-[2rem]" style={accentColor ? { color: accentColor } : {}}>
-                            {index + 1}.
-                          </span>
-                          <span className="flex-1">{line}</span>
-                        </div>
-                      ) : (
-                        <div key={index} className="h-2"></div>
-                      )
-                    ))}
+            {setlistLines.length > 0 && (
+              <div className="bg-card border rounded-lg p-6 shadow-sm">
+                <div
+                  className={`flex items-center justify-between mb-4 ${
+                    locale === "he" ? "flex-row-reverse" : ""
+                  }`}
+                >
+                  <div
+                    className={`flex items-center gap-3 ${
+                      locale === "he" ? "flex-row-reverse" : ""
+                    }`}
+                  >
+                    <Music className="h-5 w-5" style={{ color: accentColor }} />
+                    <h3 className="font-semibold text-lg">Setlist</h3>
+                    <Badge variant="secondary" className="text-xs">
+                      {setlistLines.length}
+                    </Badge>
                   </div>
+
+                  {hasMoreSetlist && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSetlistExpanded(!setlistExpanded)}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      {setlistExpanded ? "Show less" : `+${remainingSetlistCount} more`}
+                    </Button>
+                  )}
+                </div>
+
+                <div className="relative bg-muted/30 border rounded-lg p-4 overflow-hidden">
+                  <div
+                    className={`space-y-1 transition-[max-height] duration-300 ease-out ${
+                      setlistExpanded ? "max-h-[1200px]" : "max-h-[240px]"
+                    }`}
+                  >
+                    {visibleSetlistLines.map((line, idx) => {
+                      const isTeaser =
+                        !setlistExpanded && idx === SETLIST_COLLAPSED_VISIBLE;
+
+                      return (
+                        <div
+                          key={`${idx}-${line}`}
+                          className={`flex gap-3 py-1.5 ${
+                            locale === "he" ? "flex-row-reverse" : ""
+                          } ${isTeaser ? "opacity-60 blur-[0.3px]" : ""}`}
+                        >
+                          <span
+                            className="font-mono text-sm min-w-[2rem] font-semibold"
+                            style={{ color: accentColor }}
+                          >
+                            {idx + 1}.
+                          </span>
+                          {(() => {
+                            const { title, meta } = splitSetlistLine(line);
+                            return (
+                              <div className={`flex-1 ${locale === "he" ? "text-right" : ""}`}>
+                                <div className="text-sm leading-relaxed">{title}</div>
+                                {meta && (
+                                  <div className="text-xs text-muted-foreground mt-0.5">
+                                    {meta}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Bottom fade + CTA, always rendered, opacity animated */}
+                  {hasMoreSetlist && (
+                    <div
+                      className={`absolute inset-x-0 bottom-0 transition-opacity duration-300 ${
+                        setlistExpanded ? "opacity-0 pointer-events-none" : "opacity-100"
+                      }`}
+                    >
+                      <div className="h-20 bg-gradient-to-t from-muted/50 via-muted/30 to-transparent" />
+                      <div className="absolute inset-x-0 bottom-3 flex justify-center pointer-events-none">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="pointer-events-auto bg-background/80 backdrop-blur-sm border shadow-sm"
+                          onClick={() => setSetlistExpanded(true)}
+                        >
+                          Show full setlist
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
             {/* Materials */}
             {gigPack.materials && gigPack.materials.length > 0 && (
-              <div className="space-y-4 pt-6 border-t" style={accentColor ? { borderColor: accentColor + '40' } : {}}>
-                <div className="flex items-center gap-2 text-sm uppercase tracking-wider font-semibold" style={accentColor ? { color: accentColor } : {}}>
-                  <Paperclip className="h-4 w-4" />
-                  <span>Materials</span>
+              <div className="bg-card border rounded-lg p-6 shadow-sm">
+                <div className={`flex items-center gap-3 mb-4 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                  <Paperclip className="h-5 w-5" style={{ color: accentColor }} />
+                  <h3 className="font-semibold text-lg">Materials</h3>
+                  <Badge variant="secondary" className="text-xs">{gigPack.materials.length}</Badge>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-3">
                   {gigPack.materials.map((material) => (
-                    <div key={material.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div key={material.id} className="p-3 bg-muted/30 rounded-lg">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="font-semibold text-sm flex-1">{material.label}</div>
-                        <Badge variant="secondary" className="text-xs shrink-0">
+                        <Badge variant="outline" className="text-xs shrink-0">
                           {material.kind === "rehearsal" && "Rehearsal"}
                           {material.kind === "performance" && "Performance"}
                           {material.kind === "charts" && "Charts"}
@@ -216,7 +593,7 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                         size="sm"
                         className="w-full text-xs"
                         onClick={() => window.open(material.url, '_blank', 'noopener,noreferrer')}
-                        style={accentColor ? { borderColor: accentColor + '40', color: accentColor } : {}}
+                        style={{ borderColor: accentColor + '40', color: accentColor }}
                       >
                         <ExternalLink className="mr-2 h-3 w-3" />
                         Open
@@ -226,73 +603,13 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                 </div>
               </div>
             )}
-
-            {/* Logistics */}
-            {(gigPack.dress_code || gigPack.backline_notes || gigPack.parking_notes || gigPack.payment_notes) && (
-              <div className="space-y-4 pt-6 border-t" style={accentColor ? { borderColor: accentColor + '40' } : {}}>
-                <div className="flex items-center gap-2 text-sm uppercase tracking-wider font-semibold" style={accentColor ? { color: accentColor } : {}}>
-                  <Package className="h-4 w-4" />
-                  <span>Don&apos;t forget</span>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {gigPack.dress_code && (
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
-                        <Shirt className="h-3.5 w-3.5" />
-                        Dress Code
-                      </div>
-                      <p className="text-sm">{gigPack.dress_code}</p>
-                    </div>
-                  )}
-                  {gigPack.backline_notes && (
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
-                        <Package className="h-3.5 w-3.5" />
-                        Gear
-                      </div>
-                      <p className="text-sm whitespace-pre-wrap">{gigPack.backline_notes}</p>
-                    </div>
-                  )}
-                  {gigPack.parking_notes && (
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
-                        <ParkingCircle className="h-3.5 w-3.5" />
-                        Parking
-                      </div>
-                      <p className="text-sm whitespace-pre-wrap">{gigPack.parking_notes}</p>
-                    </div>
-                  )}
-                  {gigPack.payment_notes && (
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
-                        <DollarSign className="h-3.5 w-3.5" />
-                        Payment
-                      </div>
-                      <p className="text-sm whitespace-pre-wrap">{gigPack.payment_notes}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Packing Checklist */}
-            {gigPack.packing_checklist && gigPack.packing_checklist.length > 0 && (
-              <div className="space-y-4 pt-6 border-t" style={accentColor ? { borderColor: accentColor + '40' } : {}}>
-                <PackingChecklist
-                  items={gigPack.packing_checklist}
-                  gigSlug={slug}
-                  accentColor={accentColor || undefined}
-                  variant="minimal"
-                />
-              </div>
-            )}
           </div>
-        </Card>
+        </div>
         
         {/* Footer */}
-        <div className="mt-8 text-center text-xs text-muted-foreground/60">
+        <div className="mt-12 text-center text-xs text-muted-foreground/60">
           <p>
-            Powered by <span className="font-semibold text-primary">GigPack</span>
+            Powered by <span className="font-semibold" style={{ color: accentColor }}>GigPack</span>
           </p>
         </div>
       </div>

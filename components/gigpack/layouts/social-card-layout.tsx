@@ -59,19 +59,6 @@ export function SocialCardLayout({ gigPack, openMaps, slug }: SocialCardLayoutPr
                   {gigPack.band_name}
                 </p>
               )}
-                {/* Gig Mood Tag - styled with accent color */}
-                {gigPack.gig_mood && (
-                  <span 
-                    className="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold border"
-                    style={{ 
-                      backgroundColor: accentColor + '15', 
-                      borderColor: accentColor + '40',
-                      color: accentColor
-                    }}
-                  >
-                    {gigPack.gig_mood}
-                  </span>
-                )}
                 <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-border">
                 {gigPack.date && (
                     <div className="flex items-center gap-2 text-muted-foreground">

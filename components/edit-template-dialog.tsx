@@ -91,7 +91,7 @@ export function EditTemplateDialog({
   const [backlineNotes, setBacklineNotes] = useState("");
   const [parkingNotes, setParkingNotes] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
-  const [theme, setTheme] = useState<GigPackTheme>("minimal");
+  // Theme is now always minimal for unified design
   const [accentColor, setAccentColor] = useState("");
   const [posterSkin, setPosterSkin] = useState<PosterSkin>("paper");
   const [setlistStructured, setSetlistStructured] = useState<SetlistSection[]>([]);
@@ -112,7 +112,7 @@ export function EditTemplateDialog({
       setBacklineNotes(dv.backlineNotes || "");
       setParkingNotes(dv.parkingNotes || "");
       setPaymentNotes(dv.paymentNotes || "");
-      setTheme(dv.theme || "minimal");
+      // Theme is now always minimal for unified design
       setAccentColor(dv.accentColor || "");
       setPosterSkin(dv.posterSkin || "paper");
       setSetlistStructured(dv.setlistStructured || []);
@@ -142,7 +142,8 @@ export function EditTemplateDialog({
       if (backlineNotes.trim()) defaultValues.backlineNotes = backlineNotes.trim();
       if (parkingNotes.trim()) defaultValues.parkingNotes = parkingNotes.trim();
       if (paymentNotes.trim()) defaultValues.paymentNotes = paymentNotes.trim();
-      if (theme) defaultValues.theme = theme;
+      // Always use minimal theme for unified design
+      defaultValues.theme = "minimal";
       if (accentColor.trim()) defaultValues.accentColor = accentColor.trim();
       if (posterSkin) defaultValues.posterSkin = posterSkin;
       if (setlistStructured.length > 0) defaultValues.setlistStructured = setlistStructured;
@@ -332,29 +333,10 @@ export function EditTemplateDialog({
             <CollapsibleFieldGroup title={tGigpack("design")}>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>{tGigpack("themeMinimal")}</Label>
-                  <RadioGroup value={theme} onValueChange={(value) => setTheme(value as GigPackTheme)}>
-                    <div className="flex flex-wrap gap-3">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="minimal" id="edit-theme-minimal" />
-                        <Label htmlFor="edit-theme-minimal" className="cursor-pointer">
-                          {tGigpack("themeMinimal")}
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="vintage_poster" id="edit-theme-vintage" />
-                        <Label htmlFor="edit-theme-vintage" className="cursor-pointer">
-                          {tGigpack("themeVintagePoster")}
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="social_card" id="edit-theme-social" />
-                        <Label htmlFor="edit-theme-social" className="cursor-pointer">
-                          {tGigpack("themeSocialCard")}
-                        </Label>
-                      </div>
+                  <Label>{tGigpack("theme")}</Label>
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                    <span>Modern minimal design (all templates use this unified layout)</span>
                     </div>
-                  </RadioGroup>
                 </div>
 
                 <div className="space-y-2">

@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Google Sans Variable Font - Local - Hebrew characters only */
+@font-face {
+  font-family: 'Google Sans Hebrew';
+  src: url('/fonts/GoogleSans-VariableFont_GRAD,opsz,wght.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0590-05FF, U+FB1D-FB4F; /* Hebrew Unicode ranges */
+}
+
 @layer base {
   :root {
     /* Musician-friendly light theme - warm, inviting */
@@ -96,17 +106,24 @@
     @apply text-2xl md:text-3xl;
   }
 
-  /* Zalando Sans SemiExpanded for English text only */
-  /* Hebrew text continues to use Heebo via the default font stack */
+  /* Zalando Sans SemiExpanded for English text - applies to /en locale AND English text in /he locale */
   html[lang="en"] body,
   html[lang="en"] body *:not([class*="antonSC"]):not([class*="notoSansHebrew"]):not([class*="font-mono"]) {
     font-family: var(--font-zalando-en), var(--font-heebo), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
-  
-  /* Ensure Hebrew characters always use Heebo even in English context */
-  :lang(he) {
-    font-family: var(--font-heebo), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  }
+}
+
+/* Font strategy for Hebrew locale:
+   - Google Sans Hebrew (restricted to Hebrew unicode range) applies FIRST for Hebrew characters
+   - Zalando Sans for Latin/English characters (including "GigPack")
+   - This ensures each script uses its designated font */
+
+/* Hebrew locale: Google Sans for Hebrew characters, Zalando Sans for Latin */
+html[data-locale="he"] body,
+html[data-locale="he"] body *:not([class*="antonSC"]):not([class*="notoSansHebrew"]):not([class*="font-mono"]),
+html[lang="he"] body,
+html[lang="he"] body *:not([class*="antonSC"]):not([class*="notoSansHebrew"]):not([class*="font-mono"]) {
+  font-family: 'Google Sans Hebrew', var(--font-zalando-en), var(--font-heebo), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
 }
 
 /* Gig-specific utilities */

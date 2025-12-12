@@ -176,7 +176,6 @@ export async function createTemplateFromGigPack(
     backlineNotes: gigPack.backline_notes || undefined,
     parkingNotes: gigPack.parking_notes || undefined,
     paymentNotes: gigPack.payment_notes || undefined,
-    gigMood: gigPack.gig_mood || undefined,
     setlistStructured: gigPack.setlist_structured || undefined,
     packingChecklist: gigPack.packing_checklist || undefined,
   };
@@ -203,7 +202,6 @@ export function extractFormValuesToTemplateDefaults(formValues: {
   backlineNotes?: string;
   parkingNotes?: string;
   paymentNotes?: string;
-  gigMood?: string;
   setlistStructured?: GigPackTemplateDefaultValues["setlistStructured"];
   packingChecklist?: GigPackTemplateDefaultValues["packingChecklist"];
 }): GigPackTemplateDefaultValues {
@@ -218,7 +216,6 @@ export function extractFormValuesToTemplateDefaults(formValues: {
   if (formValues.backlineNotes) defaults.backlineNotes = formValues.backlineNotes;
   if (formValues.parkingNotes) defaults.parkingNotes = formValues.parkingNotes;
   if (formValues.paymentNotes) defaults.paymentNotes = formValues.paymentNotes;
-  if (formValues.gigMood) defaults.gigMood = formValues.gigMood;
   if (formValues.setlistStructured && formValues.setlistStructured.length > 0) {
     defaults.setlistStructured = formValues.setlistStructured;
   }

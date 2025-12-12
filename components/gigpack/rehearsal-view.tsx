@@ -42,19 +42,6 @@ export function RehearsalView({ gigPack, openMaps, slug, locale = "en" }: Rehear
               {gigPack.band_name}
             </p>
           )}
-          {/* Gig Mood Tag - Larger for stage readability */}
-          {gigPack.gig_mood && (
-            <span 
-              className="inline-flex items-center rounded-full px-4 py-1.5 text-base md:text-lg font-semibold border-2"
-              style={{ 
-                backgroundColor: accentColor + '15',
-                borderColor: accentColor + '40',
-                color: accentColor 
-              }}
-            >
-              {gigPack.gig_mood}
-            </span>
-          )}
         </div>
 
         {/* Times Section - Highest Priority */}

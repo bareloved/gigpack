@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  Maximize2,
   MoreHorizontal,
   Clock3,
   X,
@@ -95,7 +94,6 @@ export interface GigEditorPanelInitialValues {
   parkingNotes?: string;
   paymentNotes?: string;
   internalNotes?: string;
-  gigMood?: string;
   theme?: GigPackTheme;
   accentColor?: string;
   posterSkin?: PosterSkin;
@@ -209,9 +207,9 @@ const InlineInput = React.forwardRef<HTMLInputElement, InlineInputProps>(
         ref={ref}
         className={cn(
           "bg-transparent border-none outline-none w-full",
-          "text-foreground placeholder:text-muted-foreground",
+          "text-foreground placeholder:text-muted-foreground/50",
           "focus:ring-0 focus-visible:ring-0",
-          "hover:bg-accent/50 focus:bg-accent rounded px-2 py-1 -mx-2 transition-colors",
+          "hover:bg-accent/30 focus:bg-accent/20 rounded px-2 py-1 -mx-2 transition-colors",
           displayClassName,
           className
         )}
@@ -273,8 +271,42 @@ export function GigEditorPanel({
   const isEditing = !!gigPack;
   const dateLocale = locale === "he" ? he : undefined;
 
+  // Famous gig placeholders for random selection (localized lists)
+  const gigPlaceholdersByLocale: Record<"en" | "he", string[]> = {
+    en: [
+      "Glastonbury Festival — Main Stage",
+      "Madison Square Garden — Sold Out",
+      "Abbey Road Studios — Acoustic Session",
+      "Red Rocks Amphitheatre — Sunset Show",
+      "The Fillmore — Grand Opening",
+      "Royal Albert Hall — Live Recording",
+      "CBGB — Legendary Basement",
+      "The Troubadour — Intimate Evening",
+      "Monterey Pop — Historic Performance",
+      "Cavern Club — Liverpool Night",
+    ],
+    he: [
+      "פסטיבל גלסטונברי — במה ראשית",
+      "מדיסון סקוור גארדן — סולד אאוט",
+      "אולפני אבי רואד — סשן אקוסטי",
+      "רד רוקס — הופעת שקיעה",
+      "הפילמור — ערב פתיחה",
+      "רויאל אלברט הול — הקלטה חיה",
+      "CBGB — מרתף אגדי",
+      "דה טראובדור — ערב אינטימי",
+      "מונטריי פופ — הופעה היסטורית",
+      "קאוורן קלאב — לילה בליברפול",
+    ],
+  };
+
+  const getRandomGigPlaceholder = () => {
+    const loc = locale === "he" ? "he" : "en";
+    const list = gigPlaceholdersByLocale[loc];
+    return list[Math.floor(Math.random() * list.length)];
+  };
+
   // Active tab
-  const [activeTab, setActiveTab] = useState("lineup");
+  const [activeTab, setActiveTab] = useState("schedule");
 
   // Date picker popover state
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -301,6 +333,7 @@ export function GigEditorPanel({
   const [dressCode, setDressCode] = useState(gigPack?.dress_code || "");
   const [backlineNotes, setBacklineNotes] = useState(gigPack?.backline_notes || "");
   const [parkingNotes, setParkingNotes] = useState(gigPack?.parking_notes || "");
+  const [generalNotes, setGeneralNotes] = useState("");
   const [paymentNotes, setPaymentNotes] = useState(gigPack?.payment_notes || "");
   const [internalNotes, setInternalNotes] = useState(gigPack?.internal_notes || "");
   const [theme, setTheme] = useState<GigPackTheme>((gigPack?.theme || "minimal") as GigPackTheme);
@@ -335,6 +368,7 @@ export function GigEditorPanel({
   const [showDressCode, setShowDressCode] = useState(!!gigPack?.dress_code);
   const [showBackline, setShowBackline] = useState(!!gigPack?.backline_notes);
   const [showParking, setShowParking] = useState(!!gigPack?.parking_notes);
+  const [showGeneralNotes, setShowGeneralNotes] = useState(false);
   const [showInternalNotes, setShowInternalNotes] = useState(!!gigPack?.internal_notes);
 
   // Apply a template to the form (resets fields with template values)
@@ -372,9 +406,10 @@ export function GigEditorPanel({
     applyTemplate(gigPackTemplate);
   };
 
-  const handleStartBlank = () => {
+  const resetFormToBlank = () => {
     // Reset all fields to blank
     setTitle("");
+    setBandId(null);
     setBandName("");
     setDate("");
     setCallTime("");
@@ -398,12 +433,17 @@ export function GigEditorPanel({
     setPackingChecklist([]);
     setMaterials([]);
     setSchedule([]);
+    setActiveTab("schedule");
 
     // Reset Info tab visibility flags
     setShowDressCode(false);
     setShowBackline(false);
     setShowParking(false);
     setShowInternalNotes(false);
+  };
+
+  const handleStartBlank = () => {
+    resetFormToBlank();
 
     toast({
       title: tTemplates("startedBlank"),
@@ -470,6 +510,13 @@ export function GigEditorPanel({
       setShowInternalNotes(!!gigPack.internal_notes);
     }
   }, [gigPack]);
+
+  // When opening in "create" mode (no gigPack), ensure we don't show stale state
+  useEffect(() => {
+    if (open && !gigPack) {
+      resetFormToBlank();
+    }
+  }, [open, gigPack]);
 
   // Lineup handlers
   const addLineupMember = () => {
@@ -777,11 +824,11 @@ export function GigEditorPanel({
 
   // Tab configuration
   const tabs: TabItem[] = [
+    { id: "schedule", label: t("schedule.tabLabel"), icon: <Clock3 className="h-4 w-4" /> },
     { id: "lineup", label: t("lineup"), icon: <Users className="h-4 w-4" /> },
     { id: "setlist", label: t("musicSetlist"), icon: <Music className="h-4 w-4" /> },
-    { id: "schedule", label: t("schedule.tabLabel"), icon: <Clock3 className="h-4 w-4" /> },
-    { id: "info", label: t("logistics"), icon: <Package className="h-4 w-4" /> },
     { id: "materials", label: t("materials.tabLabel"), icon: <Paperclip className="h-4 w-4" /> },
+    { id: "info", label: t("logistics"), icon: <Package className="h-4 w-4" /> },
   ];
 
   return (
@@ -805,14 +852,7 @@ export function GigEditorPanel({
                 Top Icon Bar
                 ================================================================ */}
             <div className="flex items-center justify-between px-5 pt-4 pb-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent"
-              >
-                <Maximize2 className="h-4 w-4" />
-              </Button>
+              <div className="flex-1" />
 
               <div className="flex items-center gap-1">
                 {isEditing && gigPack && (
@@ -853,66 +893,28 @@ export function GigEditorPanel({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    {/* Templates section - only show in create mode */}
+                    <div dir={locale === "he" ? "rtl" : "ltr"}>
+                      {/* Templates section - only show in create mode */}
                     {!isEditing && (
                       <>
                         <DropdownMenuLabel>
                           {tTemplates("startFrom")}
                         </DropdownMenuLabel>
-                        
+
                         {/* Start Blank */}
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={handleStartBlank}
                           className="cursor-pointer"
                         >
-                          <FileText className="mr-2 h-4 w-4" />
+                          <FileText className="h-4 w-4 rtl:ml-2 rtl:mr-0 ltr:mr-2" />
                           {tTemplates("blankGigPack")}
                         </DropdownMenuItem>
 
-                        {/* User Templates Submenu */}
-                        {userTemplates.length > 0 && (
-                          <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="cursor-pointer">
-                              <Bookmark className="mr-2 h-4 w-4" />
-                              {tTemplates("myTemplates")}
-                              {isLoadingUserTemplates && (
-                                <Loader2 className="ml-auto h-3 w-3 animate-spin" />
-                              )}
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent>
-                              {userTemplates.map((template) => (
-                                <DropdownMenuItem
-                                  key={template.id}
-                                  onClick={() => handleApplyUserTemplate(template)}
-                                  className="cursor-pointer"
-                                >
-                                  <span className="mr-2">{template.icon || "📋"}</span>
-                                  {template.name}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuSubContent>
-                          </DropdownMenuSub>
-                        )}
-
-                        {/* Built-in Templates Submenu */}
-                        <DropdownMenuSub>
-                          <DropdownMenuSubTrigger className="cursor-pointer">
-                            <Sparkles className="mr-2 h-4 w-4" />
-                            {tTemplates("builtInTemplates")}
-                          </DropdownMenuSubTrigger>
-                          <DropdownMenuSubContent>
-                            {GIGPACK_TEMPLATES.map((template) => (
-                              <DropdownMenuItem
-                                key={template.id}
-                                onClick={() => applyTemplate(template)}
-                                className="cursor-pointer"
-                              >
-                                <span className="mr-2">{template.icon}</span>
-                                {template.label}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuSubContent>
-                        </DropdownMenuSub>
+                        {/* Templates Coming Soon */}
+                        <DropdownMenuItem disabled className="opacity-60">
+                          <Sparkles className="h-4 w-4 rtl:ml-2 rtl:mr-0 ltr:mr-2" />
+                          {tTemplates("comingSoon")}
+                        </DropdownMenuItem>
 
                         <DropdownMenuSeparator />
                       </>
@@ -940,6 +942,7 @@ export function GigEditorPanel({
                         )}
                       </>
                     )}
+                    </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -963,10 +966,12 @@ export function GigEditorPanel({
               <InlineInput
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder={t("gigTitlePlaceholder")}
+                placeholder={t("gigTitlePlaceholderWithExample", {
+                  example: getRandomGigPlaceholder(),
+                })}
                 required
                 disabled={isLoading}
-                autoFocus={!isEditing}
+                autoFocus={false}
                 displayClassName="text-2xl font-semibold leading-snug"
               />
 
@@ -977,10 +982,10 @@ export function GigEditorPanel({
                   onValueChange={handleBandSelect}
                   disabled={isLoading}
                 >
-                  <SelectTrigger className="w-full h-auto bg-transparent border-none shadow-none px-0 text-base text-muted-foreground hover:text-foreground">
+                  <SelectTrigger className="w-full h-auto bg-accent/10 hover:bg-accent/15 border-none shadow-none px-2 py-1.5 text-base text-muted-foreground hover:text-foreground rounded-md transition-colors" dir={locale === "he" ? "rtl" : "ltr"}>
                     <SelectValue placeholder={t("selectBandPlaceholder")} />
                   </SelectTrigger>
-                  <SelectContent className="max-h-[180px]">
+                  <SelectContent className="max-h-[180px]" dir={locale === "he" ? "rtl" : "ltr"}>
                     {bands.map((band) => (
                       <SelectItem key={band.id} value={band.id}>
                         {band.name}
@@ -1054,29 +1059,6 @@ export function GigEditorPanel({
                   </div>
                 </MetadataRow>
 
-                {/* Gig Type */}
-                <MetadataRow label={t("gigTypeLabel")}>
-                  <Select
-                    value={gigType || ""}
-                    onValueChange={(value) => setGigType(value || null)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger className="w-full max-w-[200px] h-8">
-                      <SelectValue placeholder={t("selectGigType")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="wedding">{t("gigType.wedding")}</SelectItem>
-                      <SelectItem value="club_show">{t("gigType.clubShow")}</SelectItem>
-                      <SelectItem value="corporate">{t("gigType.corporate")}</SelectItem>
-                      <SelectItem value="bar_gig">{t("gigType.barGig")}</SelectItem>
-                      <SelectItem value="coffee_house">{t("gigType.coffeeHouse")}</SelectItem>
-                      <SelectItem value="festival">{t("gigType.festival")}</SelectItem>
-                      <SelectItem value="rehearsal">{t("gigType.rehearsal")}</SelectItem>
-                      <SelectItem value="other">{t("gigType.other")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </MetadataRow>
-
                 {/* On Stage Time */}
                 <MetadataRow label={t("onStageTime")}>
                   <div className="flex items-center gap-2">
@@ -1110,6 +1092,29 @@ export function GigEditorPanel({
                       </p>
                     )}
                   </div>
+                </MetadataRow>
+
+                {/* Gig Type */}
+                <MetadataRow label={t("gigTypeLabel")}>
+                  <Select
+                    value={gigType || ""}
+                    onValueChange={(value) => setGigType(value || null)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="w-full max-w-[200px] h-8" dir={locale === "he" ? "rtl" : "ltr"}>
+                      <SelectValue placeholder={t("selectGigType")} />
+                    </SelectTrigger>
+                    <SelectContent dir={locale === "he" ? "rtl" : "ltr"}>
+                      <SelectItem value="wedding">{t("gigType.wedding")}</SelectItem>
+                      <SelectItem value="club_show">{t("gigType.clubShow")}</SelectItem>
+                      <SelectItem value="corporate">{t("gigType.corporate")}</SelectItem>
+                      <SelectItem value="bar_gig">{t("gigType.barGig")}</SelectItem>
+                      <SelectItem value="coffee_house">{t("gigType.coffeeHouse")}</SelectItem>
+                      <SelectItem value="festival">{t("gigType.festival")}</SelectItem>
+                      <SelectItem value="rehearsal">{t("gigType.rehearsal")}</SelectItem>
+                      <SelectItem value="other">{t("gigType.other")}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </MetadataRow>
 
               </div>
@@ -1188,7 +1193,7 @@ export function GigEditorPanel({
                       disabled={isLoading}
                       className="text-muted-foreground hover:text-foreground"
                     >
-                      <Plus className="mr-2 h-4 w-4" />
+                      <Plus className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
                       {t("addMember")}
                     </Button>
                   </div>
@@ -1237,9 +1242,9 @@ export function GigEditorPanel({
                           return a.time.localeCompare(b.time);
                         })
                         .map((item, index) => (
-                          <div key={item.id} className="flex flex-col gap-2 sm:flex-row sm:items-center p-3 rounded-md border bg-background">
+                          <div key={item.id} className="flex flex-col gap-2 sm:flex-row sm:items-center p-2 rounded-md border bg-background">
                             {/* Time Picker */}
-                            <div className="w-full sm:w-[140px]">
+                            <div className="w-[80px]">
                               <TimePicker
                                 value={item.time || ""}
                                 onChange={(newTime) => {
@@ -1305,7 +1310,7 @@ export function GigEditorPanel({
                       disabled={isLoading}
                       className="w-full"
                     >
-                      <Plus className="mr-2 h-4 w-4" />
+                      <Plus className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
                       {t("schedule.addButton")}
                     </Button>
                   </div>
@@ -1314,6 +1319,37 @@ export function GigEditorPanel({
                 {/* Info/Logistics Tab */}
                 {activeTab === "info" && (
                   <div className="space-y-4">
+                    {/* General Information */}
+                    {showGeneralNotes && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                            <FileText className="h-4 w-4" />
+                            {t("generalInformation")}
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGeneralNotes("");
+                              setShowGeneralNotes(false);
+                            }}
+                            disabled={isLoading}
+                            className="text-[11px] text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            {t("materials.remove")}
+                          </button>
+                        </div>
+                        <Textarea
+                          value={generalNotes}
+                          onChange={(e) => setGeneralNotes(e.target.value)}
+                          placeholder={t("generalInformationPlaceholder")}
+                          rows={3}
+                          disabled={isLoading}
+                          className="resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:ring-1 focus:ring-ring"
+                        />
+                      </div>
+                    )}
+
                     {/* Dress Code */}
                     {showDressCode && (
                       <div className="space-y-1">
@@ -1445,6 +1481,20 @@ export function GigEditorPanel({
 
                     {/* Add buttons for hidden fields */}
                     <div className="space-y-2">
+                      {!showGeneralNotes && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowGeneralNotes(true)}
+                          disabled={isLoading}
+                          className="w-full justify-start text-xs"
+                        >
+                          <Plus className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
+                          <FileText className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
+                          {t("generalInformation")}
+                        </Button>
+                      )}
                       {!showDressCode && (
                         <Button
                           type="button"
@@ -1454,8 +1504,8 @@ export function GigEditorPanel({
                           disabled={isLoading}
                           className="w-full justify-start text-xs"
                         >
-                          <Plus className="mr-1.5 h-3.5 w-3.5" />
-                          <Shirt className="mr-1.5 h-3.5 w-3.5" />
+                          <Plus className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
+                          <Shirt className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
                           {t("dressCode")}
                         </Button>
                       )}
@@ -1468,8 +1518,8 @@ export function GigEditorPanel({
                           disabled={isLoading}
                           className="w-full justify-start text-xs"
                         >
-                          <Plus className="mr-1.5 h-3.5 w-3.5" />
-                          <Package className="mr-1.5 h-3.5 w-3.5" />
+                          <Plus className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
+                          <Package className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
                           {t("backlineNotes")}
                         </Button>
                       )}
@@ -1482,8 +1532,8 @@ export function GigEditorPanel({
                           disabled={isLoading}
                           className="w-full justify-start text-xs"
                         >
-                          <Plus className="mr-1.5 h-3.5 w-3.5" />
-                          <ParkingCircle className="mr-1.5 h-3.5 w-3.5" />
+                          <Plus className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
+                          <ParkingCircle className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
                           {t("parkingNotes")}
                         </Button>
                       )}
@@ -1496,8 +1546,8 @@ export function GigEditorPanel({
                           disabled={isLoading}
                           className="w-full justify-start text-xs"
                         >
-                          <Plus className="mr-1.5 h-3.5 w-3.5" />
-                          <FileText className="mr-1.5 h-3.5 w-3.5" />
+                          <Plus className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
+                          <FileText className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
                           {t("internalNotes")}
                         </Button>
                       )}
@@ -1540,10 +1590,10 @@ export function GigEditorPanel({
                               }}
                               disabled={isLoading}
                             >
-                              <SelectTrigger className="w-[180px]">
+                              <SelectTrigger className="w-[180px]" dir={locale === "he" ? "rtl" : "ltr"}>
                                 <SelectValue />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent dir={locale === "he" ? "rtl" : "ltr"}>
                                 <SelectItem value="rehearsal">{t("materials.type.rehearsal")}</SelectItem>
                                 <SelectItem value="performance">{t("materials.type.performance")}</SelectItem>
                                 <SelectItem value="charts">{t("materials.type.charts")}</SelectItem>
@@ -1614,7 +1664,7 @@ export function GigEditorPanel({
                       disabled={isLoading}
                       className="mt-2"
                     >
-                      <Plus className="mr-2 h-4 w-4" />
+                      <Plus className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
                       {t("materials.addButton")}
                     </Button>
                   </div>

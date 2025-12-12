@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { GigPack, GigPackTheme } from "@/lib/types";
 import { RefreshCw, Eye } from "lucide-react";
 import { MinimalLayout } from "@/components/gigpack/layouts/minimal-layout";
-import { VintagePosterLayout } from "@/components/gigpack/layouts/vintage-poster-layout";
-import { SocialCardLayout } from "@/components/gigpack/layouts/social-card-layout";
 import { RehearsalView } from "@/components/gigpack/rehearsal-view";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { createClient } from "@/lib/supabase/client";
 
 interface PublicGigPackViewProps {
   initialGigPack: Omit<GigPack, "internal_notes" | "owner_id">;
@@ -20,9 +20,11 @@ interface PublicGigPackViewProps {
 
 export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: PublicGigPackViewProps) {
   const searchParams = useSearchParams();
+  const t = useTranslations("publicView");
   const [gigPack, setGigPack] = useState(initialGigPack);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isChecking, setIsChecking] = useState(false);
+  const [isUserActive, setIsUserActive] = useState(true);
 
   // Rehearsal Mode state
   // Initialize from URL param or localStorage
@@ -53,14 +55,15 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
     }
   }, [isRehearsalMode, slug]);
 
-  // Fast polling mechanism for near real-time updates (5 seconds)
-  // Only polls when tab is active to save resources
+  // Smart polling for live updates - only polls when actively viewed
+  // Uses shorter intervals when page is visible and user is active
   useEffect(() => {
+    let activityTimeout: NodeJS.Timeout;
     let interval: NodeJS.Timeout;
     
     const poll = async () => {
-      // Don't poll if document is hidden
-      if (document.hidden) return;
+      // Don't poll if user is idle or page is hidden
+      if (!isUserActive || document.hidden) return;
       
       setIsChecking(true);
       try {
@@ -80,27 +83,48 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
       }
     };
 
-    // Poll every 5 seconds for near-instant updates
-    interval = setInterval(poll, 5000);
+    const resetActivityTimeout = () => {
+      setIsUserActive(true);
+      clearTimeout(activityTimeout);
+      // Mark user as idle after 30 seconds of no activity
+      activityTimeout = setTimeout(() => {
+        setIsUserActive(false);
+      }, 30000);
+    };
 
-    // Pause polling when tab is not visible
+    // Start with active state
+    resetActivityTimeout();
+
+    // Set up activity listeners
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    activityEvents.forEach(event => {
+      document.addEventListener(event, resetActivityTimeout, { passive: true });
+    });
+
+    // Poll immediately when becoming visible
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        clearInterval(interval);
-      } else {
-        // Resume polling and check immediately
-        poll();
-        interval = setInterval(poll, 5000);
+      if (!document.hidden) {
+        resetActivityTimeout(); // Reset activity when page becomes visible
+        poll(); // Check immediately
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    // Set polling interval based on activity state
+    const pollInterval = isUserActive && !document.hidden ? 10000 : 60000;
+    // eslint-disable-next-line prefer-const
+    interval = setInterval(poll, pollInterval);
+
     return () => {
       clearInterval(interval);
+      clearTimeout(activityTimeout);
+      activityEvents.forEach(event => {
+        document.removeEventListener(event, resetActivityTimeout);
+      });
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [slug, gigPack.updated_at]);
+  }, [slug, gigPack.updated_at, isUserActive]);
 
   const openMaps = () => {
     if (gigPack.venue_maps_url) {
@@ -108,22 +132,10 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
     }
   };
 
-  // Render theme-based layout
-  // Theme mapping: theme string → component
-  // To add a new theme:
-  // 1. Add the theme value to GigPackTheme type in lib/types.ts
-  // 2. Create a new layout component in components/gigpack/layouts/
-  // 3. Add a case here to render it
+  // Render unified minimal layout
+  // All themes now render as minimal for simplified codebase
   const renderThemeLayout = () => {
-    switch (theme) {
-      case "vintage_poster":
-        return <VintagePosterLayout gigPack={gigPack} openMaps={openMaps} slug={slug} />;
-      case "social_card":
-        return <SocialCardLayout gigPack={gigPack} openMaps={openMaps} slug={slug} />;
-      case "minimal":
-      default:
         return <MinimalLayout gigPack={gigPack} openMaps={openMaps} slug={slug} locale={locale} />;
-    }
   };
 
   return (
@@ -140,6 +152,7 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
         {/* Rehearsal Mode toggle */}
         <Tooltip>
           <TooltipTrigger asChild>
+            <div className="bg-background/80 backdrop-blur-sm rounded-lg border border-border/50 shadow-lg">
             <Button
               variant="ghost"
               size="icon"
@@ -153,32 +166,35 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
                     : 'text-muted-foreground'
                 }`} 
               />
-              <span className="sr-only">Rehearsal Mode</span>
+              <span className="sr-only">{t("rehearsalMode")}</span>
             </Button>
+            </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p className="font-semibold">Rehearsal Mode</p>
-            <p className="text-xs text-muted-foreground">Stage-optimized view</p>
+            <p className="font-semibold">{t("rehearsalMode")}</p>
+            <p className="text-xs text-muted-foreground">{t("stageView")}</p>
           </TooltipContent>
         </Tooltip>
         
         {/* Dark mode toggle */}
+        <div className="bg-background/80 backdrop-blur-sm rounded-lg border border-border/50 shadow-lg">
         <ThemeToggle />
+        </div>
       </div>
       
-      {/* Footer with auto-update indicator - shown on all views */}
+      {/* Footer with smart polling indicator - shown on all views */}
       <div className="fixed bottom-4 right-4 z-50">
         <div className="bg-card border rounded-lg shadow-lg px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground">
-          <RefreshCw className={`h-3 w-3 ${isChecking ? 'animate-spin text-primary' : ''}`} />
+          <RefreshCw className={`h-3 w-3 ${isChecking ? 'animate-spin text-primary' : isUserActive ? 'text-green-500' : 'text-orange-500'}`} />
           <span className="hidden sm:inline">
-            {lastUpdated.toLocaleString(locale === 'he' ? 'he-IL' : 'en-US', { 
+            {isUserActive ? t("statusActive") : t("statusIdle")} • {lastUpdated.toLocaleString(locale === 'he' ? 'he-IL' : 'en-US', {
               month: 'short', 
               day: 'numeric', 
               hour: 'numeric', 
               minute: '2-digit' 
             })}
           </span>
-          <span className="sm:hidden">Live</span>
+          <span className="sm:hidden">{isUserActive ? t("statusLive") : t("statusIdle")}</span>
         </div>
       </div>
     </TooltipProvider>
