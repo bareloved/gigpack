@@ -36,6 +36,7 @@ import {
   ParkingCircle,
   Paperclip,
   Link2,
+  Clipboard,
 } from "lucide-react";
 import { GigPack, LineupMember, SetlistSection, PackingChecklistItem, GigPackTheme, PosterSkin, GigMaterial, GigMaterialKind, GigScheduleItem, Band } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
@@ -72,6 +73,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SaveAsTemplateDialog } from "@/components/save-as-template-dialog";
+import { PasteScheduleDialog } from "@/components/paste-schedule-dialog";
 import { GIGPACK_TEMPLATES, GigPackTemplate, applyTemplateToFormDefaults, userTemplateToGigPackTemplate } from "@/lib/gigpackTemplates";
 import type { UserTemplate } from "@/lib/types";
 
@@ -313,6 +315,9 @@ export function GigEditorPanel({
 
   // Save as Template dialog state
   const [saveAsTemplateOpen, setSaveAsTemplateOpen] = useState(false);
+
+  // Paste Schedule dialog state
+  const [pasteScheduleOpen, setPasteScheduleOpen] = useState(false);
 
   // Form state
   const [title, setTitle] = useState(gigPack?.title || "");
@@ -797,7 +802,7 @@ export function GigEditorPanel({
   // Public link handlers
   const copyPublicLink = () => {
     if (!gigPack) return;
-    const url = `${window.location.origin}/g/${gigPack.public_slug}`;
+    const url = `${window.location.origin}/${locale}/g/${gigPack.public_slug}`;
     navigator.clipboard.writeText(url);
     toast({
       title: tCommon("copied"),
@@ -808,18 +813,32 @@ export function GigEditorPanel({
 
   const openPublicView = () => {
     if (!gigPack) return;
-    window.open(`/g/${gigPack.public_slug}`, "_blank");
+    window.open(`/${locale}/g/${gigPack.public_slug}`, "_blank");
   };
 
   const handleDelete = async () => {
     if (!gigPack || !onDelete) return;
-    
+
     if (!window.confirm(t("deleteConfirm", { title: gigPack.title }))) {
       return;
     }
 
     onDelete(gigPack.id);
     onOpenChange(false);
+  };
+
+  // Handle paste schedule confirmation
+  const handlePasteScheduleConfirm = (newItems: GigScheduleItem[]) => {
+    // Add new items to existing schedule and sort by time
+    const updatedSchedule = [...schedule, ...newItems].sort((a, b) => {
+      // Sort by time, nulls at end
+      if (!a.time && !b.time) return 0;
+      if (!a.time) return 1;
+      if (!b.time) return -1;
+      return a.time.localeCompare(b.time);
+    });
+
+    setSchedule(updatedSchedule);
   };
 
   // Tab configuration
@@ -1294,25 +1313,38 @@ export function GigEditorPanel({
                         ))}
                     </div>
 
-                    {/* Add Schedule Item Button */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const newItem: GigScheduleItem = {
-                          id: crypto.randomUUID(),
-                          time: null,
-                          label: "",
-                        };
-                        setSchedule([...schedule, newItem]);
-                      }}
-                      disabled={isLoading}
-                      className="w-full"
-                    >
-                      <Plus className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
-                      {t("schedule.addButton")}
-                    </Button>
+                    {/* Add Schedule Item Buttons */}
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newItem: GigScheduleItem = {
+                            id: crypto.randomUUID(),
+                            time: null,
+                            label: "",
+                          };
+                          setSchedule([...schedule, newItem]);
+                        }}
+                        disabled={isLoading}
+                        className="flex-1"
+                      >
+                        <Plus className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
+                        {t("schedule.addButton")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPasteScheduleOpen(true)}
+                        disabled={isLoading}
+                        className="flex-1"
+                      >
+                        <Clipboard className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
+                        {t("schedule.pasteSchedule")}
+                      </Button>
+                    </div>
                   </div>
                 )}
 
@@ -1737,6 +1769,14 @@ export function GigEditorPanel({
           packingChecklist,
         }}
         onSuccess={onTemplateSaved}
+      />
+
+      {/* Paste Schedule Dialog */}
+      <PasteScheduleDialog
+        open={pasteScheduleOpen}
+        onOpenChange={setPasteScheduleOpen}
+        onConfirm={handlePasteScheduleConfirm}
+        existingSchedule={schedule}
       />
     </>
   );

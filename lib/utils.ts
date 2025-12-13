@@ -40,22 +40,23 @@ export function formatDate(date: string | Date | null, locale: string = "en"): s
 /**
  * Get the full public URL for a GigPack
  * @param slug - The public slug of the GigPack
+ * @param locale - The locale code (default: "en")
  * @returns The full URL to the public GigPack page
  */
-export function getPublicGigPackUrl(slug: string): string {
+export function getPublicGigPackUrl(slug: string, locale: string = "en"): string {
   // Try to get from environment variable first
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   
   if (appUrl) {
-    return `${appUrl}/g/${slug}`;
+    return `${appUrl}/${locale}/g/${slug}`;
   }
   
   // Fallback to window.location.origin on client side
   if (typeof window !== "undefined") {
-    return `${window.location.origin}/g/${slug}`;
+    return `${window.location.origin}/${locale}/g/${slug}`;
   }
   
   // Development fallback
-  return `http://localhost:3000/g/${slug}`;
+  return `http://localhost:3000/${locale}/g/${slug}`;
 }
 

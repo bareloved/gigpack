@@ -373,7 +373,7 @@ export function GigPackForm({ gigPack, initialValues, onCancel, onCreateSuccess,
 
   const copyPublicLink = () => {
     if (!gigPack) return;
-    const url = `${window.location.origin}/g/${gigPack.public_slug}`;
+    const url = `${window.location.origin}/${locale}/g/${gigPack.public_slug}`;
     navigator.clipboard.writeText(url);
     toast({
       title: tCommon("copied"),
@@ -384,7 +384,7 @@ export function GigPackForm({ gigPack, initialValues, onCancel, onCreateSuccess,
 
   const openPublicView = () => {
     if (!gigPack) return;
-    window.open(`/g/${gigPack.public_slug}`, "_blank");
+    window.open(`/${locale}/g/${gigPack.public_slug}`, "_blank");
   };
 
   const handleDelete = async () => {

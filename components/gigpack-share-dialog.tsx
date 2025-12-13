@@ -45,7 +45,7 @@ export function GigPackShareDialog({
 
   const isRtl = locale === "he";
 
-  const publicUrl = getPublicGigPackUrl(gigPack.public_slug);
+  const publicUrl = getPublicGigPackUrl(gigPack.public_slug, locale);
 
   const copyToClipboard = async (
     text: string,

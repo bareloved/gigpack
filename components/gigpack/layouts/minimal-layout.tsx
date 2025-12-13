@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { GigPack } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calendar, Clock, MapPin, Music, Users, Shirt, Package, ParkingCircle, DollarSign, Paperclip, ExternalLink, Heart, Mic, Building, Beer, Coffee, Tent, Headphones, Star, PartyPopper, Guitar, Drum, Piano, Volume2, Radio } from "lucide-react";
 import { classifyGigVisualTheme, pickFallbackImageForTheme } from "@/lib/gig-visual-theme";
 
@@ -13,7 +15,7 @@ interface MinimalLayoutProps {
   gigPack: Omit<GigPack, "internal_notes" | "owner_id">;
   openMaps: () => void;
   slug: string;
-  locale?: string;
+  locale?: string; // Keep for compatibility but will use useLocale() as source of truth
 }
 
 /**
@@ -21,10 +23,15 @@ interface MinimalLayoutProps {
  * Modern, product-like design with clear hierarchy and efficient use of space
  * Supports branding: logo, hero image, accent color, poster skin
  */
-export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: MinimalLayoutProps) {
+export function MinimalLayout({ gigPack, openMaps, slug, locale: localeProp }: MinimalLayoutProps) {
+  // Use useLocale() as the source of truth for active locale
+  const activeLocale = useLocale();
+  
   console.log("[MinimalLayout] Starting with gigPack:", {
     id: gigPack.id,
     title: gigPack.title,
+    localeProp: localeProp,
+    activeLocale: activeLocale,
     accentColor: gigPack.accent_color,
     posterSkin: gigPack.poster_skin,
     heroImageUrl: gigPack.hero_image_url,
@@ -35,6 +42,7 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
     hasPackingChecklist: !!gigPack.packing_checklist
   });
 
+  const t = useTranslations("public");
   const [setlistExpanded, setSetlistExpanded] = useState(false);
   
   // Get branding values with fallbacks
@@ -90,14 +98,14 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
   // Get display label for gig type
   const getGigTypeLabel = (gigType: string | null) => {
     switch (gigType) {
-      case "wedding": return "Wedding";
-      case "club_show": return "Club Show";
-      case "corporate": return "Corporate";
-      case "bar_gig": return "Bar Gig";
-      case "coffee_house": return "Coffee House";
-      case "festival": return "Festival";
-      case "rehearsal": return "Rehearsal";
-      case "other": return "Other";
+      case "wedding": return t("gigTypeWedding");
+      case "club_show": return t("gigTypeClubShow");
+      case "corporate": return t("gigTypeCorporate");
+      case "bar_gig": return t("gigTypeBarGig");
+      case "coffee_house": return t("gigTypeCoffeeHouse");
+      case "festival": return t("gigTypeFestival");
+      case "rehearsal": return t("gigTypeRehearsal");
+      case "other": return t("gigTypeOther");
       default: return gigType || "";
     }
   };
@@ -158,7 +166,7 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
     if (!dateString) return null;
     try {
       const date = new Date(dateString);
-      if (locale === 'he') {
+      if (activeLocale === 'he') {
         return date.toLocaleDateString('he-IL', {
           weekday: 'long',
           year: 'numeric',
@@ -211,8 +219,9 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
   };
   
   return (
-    <div className={`min-h-screen poster-skin-${posterSkin}`} style={customStyle}>
-      <div className={`container max-w-6xl mx-auto px-4 py-6 md:py-8 ${locale === 'he' ? 'rtl' : ''}`}>
+    <TooltipProvider>
+      <div className={`min-h-screen poster-skin-${posterSkin}`} style={customStyle}>
+      <div className={`container max-w-6xl mx-auto px-4 py-6 md:py-8 ${activeLocale === 'he' ? 'rtl' : ''}`} dir={activeLocale === 'he' ? 'rtl' : 'ltr'}>
         {/* Header Area with Background Image */}
         <div className="relative min-h-[400px] md:min-h-[500px] rounded-lg overflow-hidden mb-8 shadow-lg">
           {/* Background Image */}
@@ -224,9 +233,9 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
           {/* Gradient/Blur Scrim for Readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30 backdrop-blur-[1px]" />
 
-          {/* Logo overlay (top-left) */}
+          {/* Logo overlay (top-left for LTR, top-right for RTL) */}
           {gigPack.band_logo_url && (
-            <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10">
+            <div className={`absolute top-4 md:top-6 z-10 ${activeLocale === 'he' ? 'right-4 md:right-6' : 'left-4 md:left-6'}`}>
               <div className="bg-white/95 dark:bg-black/80 p-2 rounded-lg shadow-lg">
                 <img src={gigPack.band_logo_url} alt="Band logo" className="band-logo-small" />
               </div>
@@ -252,9 +261,9 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
               }}
             />
 
-            {/* Gig Type Badge - Upper Right Corner */}
+            {/* Gig Type Badge - Upper Right for LTR, Upper Left for RTL */}
             {gigPack.gig_type && gigPack.gig_type !== "other" && (
-              <div className="absolute top-6 right-6 z-20">
+              <div className={`absolute top-6 z-20 ${activeLocale === 'he' ? 'left-6' : 'right-6'}`}>
                 <Badge
                   variant="secondary"
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold backdrop-blur-sm shadow-lg ${getGigTypeBadgeColors(gigPack.gig_type)}`}
@@ -300,8 +309,32 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                     </div>
                   )}
                   {gigPack.venue_address && (
-                    <div className="text-white/90 text-sm md:text-base drop-shadow-sm">
+                    <div className="flex items-center justify-center gap-2 text-white/90 text-sm md:text-base drop-shadow-sm">
                       {gigPack.venue_address}
+                      {gigPack.venue_maps_url && (
+                        <>
+                          <Button
+                            onClick={openMaps}
+                            variant="secondary"
+                            size="sm"
+                            className="h-8 w-8 p-0 bg-white/20 hover:bg-white/30 backdrop-blur-sm border-white/30 text-white shadow-lg"
+                          >
+                            <MapPin className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              const address = encodeURIComponent(gigPack.venue_address || '');
+                              const wazeUrl = `https://waze.com/ul?q=${address}`;
+                              window.open(wazeUrl, '_blank', 'noopener,noreferrer');
+                            }}
+                            variant="secondary"
+                            size="sm"
+                            className="h-8 w-8 p-0 bg-white/20 hover:bg-white/30 backdrop-blur-sm border-white/30 text-white shadow-lg"
+                          >
+                            <img src="/wazeicon.png" alt="Waze" className="h-7 w-7" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -309,17 +342,6 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
 
               {/* Quick Actions */}
               <div className="flex flex-wrap items-center justify-center gap-3">
-                {gigPack.venue_maps_url && (
-                  <Button
-                    onClick={openMaps}
-                    variant="secondary"
-                    size="sm"
-                    className="gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm border-white/30 text-white shadow-lg"
-                  >
-                    <MapPin className="h-4 w-4" />
-                    Open Maps
-                  </Button>
-                )}
                 {gigPack.call_time && (
                   <Button
                     variant="secondary"
@@ -337,7 +359,7 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                     onClick={() => navigator.clipboard?.writeText(gigPack.call_time || '')}
                   >
                     <Clock className="h-4 w-4" />
-                    Call: {gigPack.call_time}
+                    <span>{t("callLabel")} <span dir="ltr">{gigPack.call_time}</span></span>
                   </Button>
                 )}
                 {gigPack.on_stage_time && (
@@ -357,7 +379,7 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                     onClick={() => navigator.clipboard?.writeText(gigPack.on_stage_time || '')}
                   >
                     <Music className="h-4 w-4" />
-                    Stage: {gigPack.on_stage_time}
+                    <span>{t("stageLabel")} <span dir="ltr">{gigPack.on_stage_time}</span></span>
                   </Button>
                 )}
               </div>
@@ -373,11 +395,11 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
             {/* Schedule */}
             {gigPack.schedule && gigPack.schedule.length > 0 && (
               <div className="bg-card border rounded-lg p-6 shadow-sm">
-                <div className={`flex items-center gap-3 mb-4 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center gap-3 mb-4`}>
                   <Clock className="h-5 w-5" style={{ color: accentColor }} />
-                  <h3 className="font-semibold text-lg">Schedule</h3>
+                  <h3 className="font-semibold text-lg">{t("schedule")}</h3>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-1">
                   {/* Custom schedule items */}
                   {gigPack.schedule.sort((a, b) => {
                     // Sort by time, nulls at end
@@ -385,10 +407,18 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                     if (!a.time) return 1;
                     if (!b.time) return -1;
                     return a.time.localeCompare(b.time);
-                  }).map((item) => (
-                    <div key={item.id} className={`flex items-center justify-between p-3 bg-muted/30 rounded-lg ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
-                      <span className="font-medium">{item.label}</span>
-                      <span className="text-base font-semibold text-muted-foreground">{item.time}</span>
+                  }).map((item, index) => (
+                    <div key={item.id}>
+                      <div className="py-2">
+                        <span dir="ltr" className="text-base font-bold text-foreground">
+                          {item.time}
+                        </span>
+                        <span className="mx-1 text-muted-foreground/60" aria-hidden="true">–</span>
+                        <span className="font-medium text-foreground/90">{item.label}</span>
+                      </div>
+                      {index < gigPack.schedule!.length - 1 && (
+                        <hr className="border-muted-foreground/20" />
+                      )}
                     </div>
                   ))}
                 </div>
@@ -402,38 +432,38 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                 {/* Logistics */}
                 {(gigPack.dress_code || gigPack.backline_notes || gigPack.parking_notes) && (
                   <div className="bg-card border rounded-lg p-6 shadow-sm">
-                    <div className={`flex items-center gap-3 mb-4 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex items-center gap-3 mb-4`}>
                       <Package className="h-5 w-5" style={{ color: accentColor }} />
-                      <h3 className="font-semibold text-lg">Logistics</h3>
+                      <h3 className="font-semibold text-lg">{t("logistics")}</h3>
                     </div>
                     <div className="space-y-4">
                       {gigPack.dress_code && (
-                        <div className={`flex gap-3 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                        <div className={`flex gap-3`}>
                           <Shirt className="h-4 w-4 mt-1 flex-shrink-0 text-muted-foreground" />
-                          <div className={`${locale === 'he' ? 'text-right' : ''}`}>
-                            <div className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-1">Dress Code</div>
+                          <div className={`${activeLocale === 'he' ? 'text-right' : ''}`}>
+                            <div className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-1">{t("dressCodeLabel")}</div>
                             <div className="text-sm">{gigPack.dress_code}</div>
                           </div>
                         </div>
                       )}
                       {gigPack.backline_notes && (
-                        <div className={`flex gap-3 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                        <div className={`flex gap-3`}>
                           <Package className="h-4 w-4 mt-1 flex-shrink-0 text-muted-foreground" />
-                          <div className={`${locale === 'he' ? 'text-right' : ''}`}>
-                            <div className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-1">Gear</div>
+                          <div className={`${activeLocale === 'he' ? 'text-right' : ''}`}>
+                            <div className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-1">{t("gearLabel")}</div>
                             <div className="text-sm whitespace-pre-wrap">{gigPack.backline_notes}</div>
                           </div>
-                  </div>
-                )}
+                        </div>
+                      )}
                       {gigPack.parking_notes && (
-                        <div className={`flex gap-3 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                        <div className={`flex gap-3`}>
                           <ParkingCircle className="h-4 w-4 mt-1 flex-shrink-0 text-muted-foreground" />
-                          <div className={`${locale === 'he' ? 'text-right' : ''}`}>
-                            <div className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-1">Parking</div>
+                          <div className={`${activeLocale === 'he' ? 'text-right' : ''}`}>
+                            <div className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-1">{t("parkingLabel")}</div>
                             <div className="text-sm whitespace-pre-wrap">{gigPack.parking_notes}</div>
                           </div>
-                      </div>
-                    )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -453,36 +483,48 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
             {/* Lineup */}
             {gigPack.lineup && gigPack.lineup.length > 0 && (
               <div className="bg-card border rounded-lg p-6 shadow-sm">
-                <div className={`flex items-center gap-3 mb-4 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center gap-3 mb-4`}>
                   <Users className="h-5 w-5" style={{ color: accentColor }} />
-                  <h3 className="font-semibold text-lg">Who&apos;s Playing</h3>
+                  <h3 className="font-semibold text-lg">{t("whosPlaying")}</h3>
                 </div>
-                <div className="grid gap-3">
-                  {gigPack.lineup.map((member, index) => (
-                    <div key={index} className="p-3 bg-muted/30 rounded-lg">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          {member.name && (
-                            <Avatar size="lg" className="shrink-0">
-                              <AvatarFallback className="text-base font-semibold bg-primary/10 text-primary">
-                                {getInitials(member.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                          {member.name && (
-                            <div className="font-semibold min-w-0 truncate">{member.name}</div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
-                          {getInstrumentIcon(member.role)}
-                          <span>{member.role}</span>
-                        </div>
-                      </div>
-                      {member.notes && (
-                        <div className="text-sm text-muted-foreground mt-3 italic pl-11">{member.notes}</div>
-                      )}
-                    </div>
-                  ))}
+                <div className="flex flex-wrap gap-2">
+                  {(() => {
+                    const maxVisible = 6;
+                    const visibleMembers = gigPack.lineup.slice(0, maxVisible);
+                    const remaining = gigPack.lineup.length - maxVisible;
+
+                    return (
+                      <>
+                        {visibleMembers.map((member, index) => (
+                          <div
+                            key={index}
+                            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted/30 border border-border/60"
+                          >
+                            {member.name && (
+                              <span className="text-[13px] font-semibold leading-none">
+                                {member.name}
+                              </span>
+                            )}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-muted-foreground/80">{getInstrumentIcon(member.role)}</span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{member.role}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        ))}
+                        {remaining > 0 && (
+                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted/30 border border-border/60">
+                            <span className="text-[13px] font-semibold text-muted-foreground/80">
+                              +{remaining}
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -490,18 +532,10 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
             {/* Setlist */}
             {setlistLines.length > 0 && (
               <div className="bg-card border rounded-lg p-6 shadow-sm">
-                <div
-                  className={`flex items-center justify-between mb-4 ${
-                    locale === "he" ? "flex-row-reverse" : ""
-                  }`}
-                >
-                  <div
-                    className={`flex items-center gap-3 ${
-                      locale === "he" ? "flex-row-reverse" : ""
-                    }`}
-                  >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
                     <Music className="h-5 w-5" style={{ color: accentColor }} />
-                    <h3 className="font-semibold text-lg">Setlist</h3>
+                    <h3 className="font-semibold text-lg">{t("setlist")}</h3>
                     <Badge variant="secondary" className="text-xs">
                       {setlistLines.length}
                     </Badge>
@@ -514,7 +548,7 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                       onClick={() => setSetlistExpanded(!setlistExpanded)}
                       className="text-xs text-muted-foreground hover:text-foreground"
                     >
-                      {setlistExpanded ? "Show less" : `+${remainingSetlistCount} more`}
+                      {setlistExpanded ? t("showLess") : t("showMore", { count: remainingSetlistCount })}
                     </Button>
                   )}
                 </div>
@@ -532,9 +566,7 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                       return (
                         <div
                           key={`${idx}-${line}`}
-                          className={`flex gap-3 py-1.5 ${
-                            locale === "he" ? "flex-row-reverse" : ""
-                          } ${isTeaser ? "opacity-60 blur-[0.3px]" : ""}`}
+                          className={`flex gap-3 py-1.5 ${isTeaser ? "opacity-60 blur-[0.3px]" : ""}`}
                         >
                           <span
                             className="font-mono text-sm min-w-[2rem] font-semibold"
@@ -545,7 +577,7 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                           {(() => {
                             const { title, meta } = splitSetlistLine(line);
                             return (
-                              <div className={`flex-1 ${locale === "he" ? "text-right" : ""}`}>
+                              <div className={`flex-1 ${activeLocale === "he" ? "text-right" : ""}`}>
                                 <div className="text-sm leading-relaxed">{title}</div>
                                 {meta && (
                                   <div className="text-xs text-muted-foreground mt-0.5">
@@ -575,7 +607,7 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                           className="pointer-events-auto bg-background/80 backdrop-blur-sm border shadow-sm"
                           onClick={() => setSetlistExpanded(true)}
                         >
-                          Show full setlist
+                          {t("showFullSetlist")}
                         </Button>
                       </div>
                     </div>
@@ -587,26 +619,23 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
             {/* Materials */}
             {gigPack.materials && gigPack.materials.length > 0 && (
               <div className="bg-card border rounded-lg p-6 shadow-sm">
-                <div className={`flex items-center gap-3 mb-4 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center gap-3 mb-4`}>
                   <Paperclip className="h-5 w-5" style={{ color: accentColor }} />
-                  <h3 className="font-semibold text-lg">Materials</h3>
+                  <h3 className="font-semibold text-lg">{t("materials")}</h3>
                   <Badge variant="secondary" className="text-xs">{gigPack.materials.length}</Badge>
                 </div>
                 <div className="grid gap-3">
                   {gigPack.materials.map((material) => (
                     <div key={material.id} className="p-3 bg-muted/30 rounded-lg">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="font-semibold text-sm flex-1">{material.label}</div>
+                      <div className={`flex items-start justify-between gap-2 mb-2`}>
+                        <div className={`font-semibold text-sm flex-1 ${activeLocale === 'he' ? 'text-right' : ''}`}>{material.label}</div>
                         <Badge variant="outline" className="text-xs shrink-0">
-                          {material.kind === "rehearsal" && "Rehearsal"}
-                          {material.kind === "performance" && "Performance"}
-                          {material.kind === "charts" && "Charts"}
-                          {material.kind === "reference" && "Reference"}
-                          {material.kind === "other" && "Other"}
+                          {material.kind === "rehearsal" && t("materialTypeRehearsal")}
+                          {material.kind === "performance" && t("materialTypePerformance")}
+                          {material.kind === "charts" && t("materialTypeCharts")}
+                          {material.kind === "reference" && t("materialTypeReference")}
+                          {material.kind === "other" && t("materialTypeOther")}
                         </Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground truncate mb-3">
-                        {material.url}
                       </div>
                       <Button
                         variant="outline"
@@ -615,8 +644,8 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
                         onClick={() => window.open(material.url, '_blank', 'noopener,noreferrer')}
                         style={{ borderColor: accentColor + '40', color: accentColor }}
                       >
-                        <ExternalLink className="mr-2 h-3 w-3" />
-                        Open
+                        <ExternalLink className={`h-3 w-3 ${activeLocale === 'he' ? 'ml-2' : 'mr-2'}`} />
+                        {t("openMaterial")}
                       </Button>
                     </div>
                   ))}
@@ -634,6 +663,7 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale = "en" }: Minima
         </div>
       </div>
     </div>
+  </TooltipProvider>
   );
 }
 

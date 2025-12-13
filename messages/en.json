@@ -57,7 +57,17 @@
     "stageView": "Stage-optimized view",
     "statusActive": "Active",
     "statusIdle": "Idle",
-    "statusLive": "Live"
+    "statusLive": "Live",
+    "date": "Date",
+    "callTime": "Call Time",
+    "onStage": "On Stage",
+    "venue": "Venue",
+    "openInMaps": "Open in Maps",
+    "setlist": "Setlist",
+    "essentialInfo": "Essential Info",
+    "dressCode": "Dress Code",
+    "gear": "Gear",
+    "stageViewFooter": "Stage view · GigPack"
   },
   "languageSwitcher": {
     "ariaLabel": "Switch language",
@@ -301,7 +311,18 @@
       "tabLabel": "Schedule",
       "description": "Build a clear timeline for the day: soundcheck, doors, showtime and more.",
       "labelPlaceholder": "What's happening (e.g. Soundcheck, Doors open, Show starts)",
-      "addButton": "Add item"
+      "addButton": "Add item",
+      "pasteSchedule": "Paste Schedule",
+      "pasteScheduleDialogTitle": "Paste Schedule",
+      "pasteScheduleDialogDescription": "Paste text with times at the start of each line, and the system will automatically create schedule items.",
+      "pasteScheduleTextareaPlaceholder": "14:00- System check and lines\n14:30- Roni and Bar sound check\n15:20- End sound check + audience\n16:40- Ido arrives\n18:00- Show",
+      "createItems": "Create Items",
+      "preview": "Preview",
+      "confirmAndAdd": "Confirm & Add",
+      "backToEdit": "Back to Edit",
+      "unrecognized": "Unrecognized",
+      "duplicateWarning": "Similar item already exists",
+      "parsingHint": "Make sure the line starts with time in HH:MM format"
     }
   },
   "public": {
@@ -325,7 +346,26 @@
     "onStage": "On stage",
     "essentialInfo": "Quick info",
     "packingChecklist": "Packing checklist",
-    "packingChecklistHint": "Tick these off as you pack your stuff."
+    "packingChecklistHint": "Tick these off as you pack your stuff.",
+    "schedule": "Schedule",
+    "logistics": "Logistics",
+    "openMaps": "Open Maps",
+    "callLabel": "Call:",
+    "stageLabel": "Stage:",
+    "dressCodeLabel": "Dress Code",
+    "gearLabel": "Gear",
+    "parkingLabel": "Parking",
+    "showLess": "Show less",
+    "showMore": "+{count} more",
+    "showFullSetlist": "Show full setlist",
+    "gigTypeWedding": "Wedding",
+    "gigTypeClubShow": "Club Show",
+    "gigTypeCorporate": "Corporate",
+    "gigTypeBarGig": "Bar Gig",
+    "gigTypeCoffeeHouse": "Coffee House",
+    "gigTypeFestival": "Festival",
+    "gigTypeRehearsal": "Rehearsal",
+    "gigTypeOther": "Other"
   },
   "share": {
     "title": "Share with the band",

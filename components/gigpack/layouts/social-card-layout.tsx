@@ -234,9 +234,6 @@ export function SocialCardLayout({ gigPack, openMaps, slug }: SocialCardLayoutPr
                           {material.kind === "other" && "Other"}
                         </Badge>
                       </div>
-                      <div className="text-xs text-muted-foreground truncate mb-3">
-                        {material.url}
-                      </div>
                       <Button
                         variant="outline"
                         size="sm"

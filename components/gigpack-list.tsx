@@ -97,7 +97,7 @@ export function GigPackList({ gigPacks, onEdit, onCreate, onDelete }: GigPackLis
             {/* Gig Title */}
             <div className="space-y-2">
               <Link 
-                href={`/g/${pack.public_slug}`}
+                href={`/${locale}/g/${pack.public_slug}`}
                 className="block group/title"
               >
                 <HoverUnderline color="hsl(var(--primary))">
