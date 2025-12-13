@@ -178,7 +178,7 @@ export function PasteScheduleDialog({
                   <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm text-red-700 dark:text-red-300 mb-1" dir="auto">
-                      "{error.originalText}"
+                      &ldquo;{error.originalText}&rdquo;
                     </div>
                     <div className="text-xs text-red-600 dark:text-red-400">
                       {error.hint}

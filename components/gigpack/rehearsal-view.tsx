@@ -5,7 +5,7 @@ import { Clock, MapPin, Shirt, Package, ExternalLink, PlayCircle, Disc3 } from "
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PackingChecklist } from "@/components/packing-checklist";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface RehearsalViewProps {
   gigPack: Omit<GigPack, "internal_notes" | "owner_id">;
@@ -27,29 +27,16 @@ interface RehearsalViewProps {
  * - Single-column, focused layout
  * - Works across all themes
  */
-export function RehearsalView({ gigPack, openMaps, slug, locale: localeProp }: RehearsalViewProps) {
-  // Use useLocale() as the source of truth for active locale
-  const activeLocale = useLocale();
+export function RehearsalView({ gigPack, openMaps, slug, locale }: RehearsalViewProps) {
+  // Use the passed locale prop as the source of truth
   
-  console.log("[RehearsalView] Starting with gigPack:", {
-    id: gigPack.id,
-    title: gigPack.title,
-    date: gigPack.date,
-    localeProp: localeProp,
-    activeLocale: activeLocale,
-    accentColor: gigPack.accent_color,
-    hasLineup: !!gigPack.lineup,
-    hasSchedule: !!gigPack.schedule,
-    hasMaterials: !!gigPack.materials,
-    hasPackingChecklist: !!gigPack.packing_checklist
-  });
 
   const t = useTranslations("publicView");
   const accentColor = gigPack.accent_color || "hsl(var(--primary))";
 
   return (
     <div className="min-h-screen bg-background">
-      <div className={`container max-w-5xl mx-auto px-6 py-8 md:py-12 ${activeLocale === 'he' ? 'rtl' : ''}`} dir={activeLocale === 'he' ? 'rtl' : 'ltr'}>
+      <div className={`container max-w-5xl mx-auto px-6 py-8 md:py-12 ${locale === 'he' ? 'rtl' : ''}`} dir={locale === 'he' ? 'rtl' : 'ltr'}>
         {/* Header - Gig Title and Band */}
         <div className="text-center space-y-4 mb-8 md:mb-12 pb-8 border-b-2" style={{ borderColor: accentColor }}>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
@@ -72,11 +59,8 @@ export function RehearsalView({ gigPack, openMaps, slug, locale: localeProp }: R
               </div>
               <div className="text-3xl md:text-5xl font-bold" style={{ color: accentColor }}>
                 {(() => {
-                  console.log("[RehearsalView] Calling formatDate with:", gigPack.date, "locale:", activeLocale);
                   try {
-                    const result = formatDate(gigPack.date, activeLocale);
-                    console.log("[RehearsalView] formatDate result:", result);
-                    return result;
+                    return formatDate(gigPack.date, locale);
                   } catch (error) {
                     console.error("[RehearsalView] formatDate error:", error);
                     return "Error";
@@ -91,7 +75,7 @@ export function RehearsalView({ gigPack, openMaps, slug, locale: localeProp }: R
             <div className="grid md:grid-cols-2 gap-6 md:gap-8">
               {gigPack.call_time && (
                 <div className="bg-muted/50 border-2 rounded-xl p-6 md:p-8 text-center">
-                  <div className={`flex items-center justify-center gap-2 text-sm md:text-base text-muted-foreground uppercase tracking-wider font-semibold mb-3 ${activeLocale === 'he' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-center justify-center gap-2 text-sm md:text-base text-muted-foreground uppercase tracking-wider font-semibold mb-3 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
                     <Clock className="h-5 w-5 md:h-6 md:w-6" />
                     <span>{t("callTime")}</span>
                   </div>
@@ -102,7 +86,7 @@ export function RehearsalView({ gigPack, openMaps, slug, locale: localeProp }: R
               )}
               {gigPack.on_stage_time && (
                 <div className="bg-muted/50 border-2 rounded-xl p-6 md:p-8 text-center">
-                  <div className={`flex items-center justify-center gap-2 text-sm md:text-base text-muted-foreground uppercase tracking-wider font-semibold mb-3 ${activeLocale === 'he' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-center justify-center gap-2 text-sm md:text-base text-muted-foreground uppercase tracking-wider font-semibold mb-3 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
                     <Clock className="h-5 w-5 md:h-6 md:w-6" />
                     <span>{t("onStage")}</span>
                   </div>
@@ -117,7 +101,7 @@ export function RehearsalView({ gigPack, openMaps, slug, locale: localeProp }: R
           {/* Venue - Compact but visible */}
           {gigPack.venue_name && (
             <div className="text-center">
-              <div className={`flex items-center justify-center gap-2 text-sm md:text-base text-muted-foreground mb-2 ${activeLocale === 'he' ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center justify-center gap-2 text-sm md:text-base text-muted-foreground mb-2 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
                 <MapPin className="h-4 w-4 md:h-5 md:w-5" />
                 <span className="uppercase tracking-wider font-semibold">{t("venue")}</span>
               </div>
@@ -130,10 +114,10 @@ export function RehearsalView({ gigPack, openMaps, slug, locale: localeProp }: R
                   onClick={openMaps} 
                   variant="outline" 
                   size="lg" 
-                  className={`mt-3 text-base md:text-lg ${activeLocale === 'he' ? 'flex-row-reverse' : ''}`}
+                  className={`mt-3 text-base md:text-lg ${locale === 'he' ? 'flex-row-reverse' : ''}`}
                   style={{ borderColor: accentColor, color: accentColor }}
                 >
-                  <MapPin className={`h-5 w-5 ${activeLocale === 'he' ? 'ml-2' : 'mr-2'}`} />
+                  <MapPin className={`h-5 w-5 ${locale === 'he' ? 'ml-2' : 'mr-2'}`} />
                   {t("openInMaps")}
                 </Button>
               )}
@@ -152,17 +136,17 @@ export function RehearsalView({ gigPack, openMaps, slug, locale: localeProp }: R
 
             <div className="bg-muted/30 border-2 rounded-2xl p-6 md:p-10">
               {gigPack.setlist_structured && gigPack.setlist_structured.length > 0 ? (
-                <RehearsalSetlist sections={gigPack.setlist_structured} accentColor={accentColor} locale={activeLocale} />
+                <RehearsalSetlist sections={gigPack.setlist_structured} accentColor={accentColor} locale={locale} />
               ) : (
                 /* Fallback to simple setlist with large fonts */
                 <div className="space-y-3">
                   {gigPack.setlist?.split('\n').map((line, index) => (
                     line.trim() ? (
-                      <div key={index} className={`flex gap-4 md:gap-6 py-3 border-b border-dashed last:border-0 ${activeLocale === 'he' ? 'flex-row-reverse' : ''}`}>
+                      <div key={index} className={`flex gap-4 md:gap-6 py-3 border-b border-dashed last:border-0 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
                         <span className="text-xl md:text-3xl font-bold min-w-[3rem] md:min-w-[4rem] tabular-nums" style={{ color: accentColor }}>
                           {String(index + 1).padStart(2, '0')}.
                         </span>
-                        <span className={`text-xl md:text-3xl font-semibold flex-1 ${activeLocale === 'he' ? 'text-right' : ''}`}>{line}</span>
+                        <span className={`text-xl md:text-3xl font-semibold flex-1 ${locale === 'he' ? 'text-right' : ''}`}>{line}</span>
                       </div>
                     ) : (
                       <div key={index} className="h-4"></div>
@@ -184,20 +168,20 @@ export function RehearsalView({ gigPack, openMaps, slug, locale: localeProp }: R
             <div className="grid md:grid-cols-2 gap-4 md:gap-6">
               {gigPack.dress_code && (
                 <div className="bg-muted/50 border rounded-xl p-5 md:p-6">
-                  <div className={`flex items-center gap-2 text-sm md:text-base uppercase tracking-wider font-semibold text-muted-foreground mb-3 ${activeLocale === 'he' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-center gap-2 text-sm md:text-base uppercase tracking-wider font-semibold text-muted-foreground mb-3 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
                     <Shirt className="h-5 w-5" />
                     <span>{t("dressCode")}</span>
                   </div>
-                  <p className={`text-lg md:text-2xl font-medium ${activeLocale === 'he' ? 'text-right' : ''}`}>{gigPack.dress_code}</p>
+                  <p className={`text-lg md:text-2xl font-medium ${locale === 'he' ? 'text-right' : ''}`}>{gigPack.dress_code}</p>
                 </div>
               )}
               {gigPack.backline_notes && (
                 <div className="bg-muted/50 border rounded-xl p-5 md:p-6">
-                  <div className={`flex items-center gap-2 text-sm md:text-base uppercase tracking-wider font-semibold text-muted-foreground mb-3 ${activeLocale === 'he' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-center gap-2 text-sm md:text-base uppercase tracking-wider font-semibold text-muted-foreground mb-3 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
                     <Package className="h-5 w-5" />
                     <span>{t("gear")}</span>
                   </div>
-                  <p className={`text-base md:text-xl font-medium whitespace-pre-wrap leading-relaxed ${activeLocale === 'he' ? 'text-right' : ''}`}>{gigPack.backline_notes}</p>
+                  <p className={`text-base md:text-xl font-medium whitespace-pre-wrap leading-relaxed ${locale === 'he' ? 'text-right' : ''}`}>{gigPack.backline_notes}</p>
                 </div>
               )}
             </div>
@@ -261,7 +245,7 @@ function SongReferenceIcon({ url, accentColor, locale = "en" }: { url: string; a
       href={safeUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex items-center justify-center hover:scale-110 transition-transform opacity-80 hover:opacity-100 ${activeLocale === 'he' ? 'mr-3 md:mr-4' : 'ml-3 md:ml-4'}`}
+      className={`inline-flex items-center justify-center hover:scale-110 transition-transform opacity-80 hover:opacity-100 ${locale === 'he' ? 'mr-3 md:mr-4' : 'ml-3 md:ml-4'}`}
       style={{ color: accentColor }}
       title={tooltipText}
       aria-label={`${tooltipText} in new tab`}
@@ -301,11 +285,11 @@ function RehearsalSetlist({ sections, accentColor, locale = "en" }: { sections: 
                 return (
                   <div key={song.id} className="py-3 md:py-4 border-b border-dashed last:border-0">
                     {/* Song Number and Title */}
-                    <div className={`flex gap-4 md:gap-6 items-baseline mb-2 ${activeLocale === 'he' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex gap-4 md:gap-6 items-baseline mb-2 ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
                       <span className="text-2xl md:text-4xl font-bold min-w-[3rem] md:min-w-[4rem] tabular-nums flex-shrink-0" style={{ color: accentColor }}>
                         {String(globalSongNumber).padStart(2, '0')}.
                       </span>
-                      <div className={`flex-1 space-y-1 ${activeLocale === 'he' ? 'text-right' : ''}`}>
+                      <div className={`flex-1 space-y-1 ${locale === 'he' ? 'text-right' : ''}`}>
                         <div className="text-2xl md:text-4xl font-bold leading-tight">
                           {song.title}
                           {song.referenceUrl && (
@@ -315,7 +299,7 @@ function RehearsalSetlist({ sections, accentColor, locale = "en" }: { sections: 
                         
                         {/* Key, Tempo, Artist - inline */}
                         {(song.key || song.tempo || song.artist) && (
-                          <div className={`flex flex-wrap gap-3 md:gap-4 text-base md:text-xl text-muted-foreground font-medium ${activeLocale === 'he' ? 'flex-row-reverse' : ''}`}>
+                          <div className={`flex flex-wrap gap-3 md:gap-4 text-base md:text-xl text-muted-foreground font-medium ${locale === 'he' ? 'flex-row-reverse' : ''}`}>
                             {song.key && (
                               <span className="font-bold" style={{ color: accentColor }}>
                                 {song.key}
@@ -330,7 +314,7 @@ function RehearsalSetlist({ sections, accentColor, locale = "en" }: { sections: 
                     
                     {/* Notes - Important watch-outs */}
                     {song.notes && (
-                      <div className={`mt-2 text-base md:text-lg text-muted-foreground font-medium ${activeLocale === 'he' ? 'mr-[3.5rem] md:mr-[5rem] text-right' : 'ml-[3.5rem] md:ml-[5rem]'}`}>
+                      <div className={`mt-2 text-base md:text-lg text-muted-foreground font-medium ${locale === 'he' ? 'mr-[3.5rem] md:mr-[5rem] text-right' : 'ml-[3.5rem] md:ml-[5rem]'}`}>
                         → {song.notes}
                       </div>
                     )}

@@ -70,20 +70,6 @@ interface PublicGigPackViewProps {
 }
 
 export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: PublicGigPackViewProps) {
-  console.log("[PublicGigPackView] Starting component with:", {
-    slug,
-    locale,
-    initialGigPack: {
-      id: initialGigPack.id,
-      title: initialGigPack.title,
-      date: initialGigPack.date,
-      hasLineup: !!initialGigPack.lineup,
-      hasSchedule: !!initialGigPack.schedule,
-      hasMaterials: !!initialGigPack.materials,
-      hasPackingChecklist: !!initialGigPack.packing_checklist,
-      theme: initialGigPack.theme
-    }
-  });
 
   const searchParams = useSearchParams();
   const t = useTranslations("publicView");
@@ -113,7 +99,6 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
 
   // Determine theme: default to 'minimal' if not set
   const theme: GigPackTheme = (gigPack.theme || "minimal") as GigPackTheme;
-  console.log("[PublicGigPackView] Determined theme:", theme, "from gigPack.theme:", gigPack.theme);
 
   // Persist rehearsal mode preference to localStorage
   useEffect(() => {
@@ -202,7 +187,6 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
   // Render unified minimal layout
   // All themes now render as minimal for simplified codebase
   const renderThemeLayout = () => {
-    console.log("[PublicGigPackView] Rendering theme layout for theme:", theme);
     try {
         return <MinimalLayout gigPack={gigPack} openMaps={openMaps} slug={slug} locale={locale} />;
     } catch (error) {
@@ -211,15 +195,12 @@ export function PublicGigPackView({ initialGigPack, slug, locale = "en" }: Publi
     }
   };
 
-  console.log("[PublicGigPackView] Rendering with isRehearsalMode:", isRehearsalMode);
-
   return (
     <PublicGigPackErrorBoundary slug={slug}>
     <TooltipProvider>
       {/* Render either Rehearsal View or normal theme layout */}
       {isRehearsalMode ? (
           (() => {
-            console.log("[PublicGigPackView] Rendering RehearsalView");
             try {
               return <RehearsalView gigPack={gigPack} openMaps={openMaps} slug={slug} locale={locale} />;
             } catch (error) {

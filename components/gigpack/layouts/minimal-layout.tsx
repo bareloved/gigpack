@@ -27,20 +27,6 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale: localeProp }: M
   // Use useLocale() as the source of truth for active locale
   const activeLocale = useLocale();
   
-  console.log("[MinimalLayout] Starting with gigPack:", {
-    id: gigPack.id,
-    title: gigPack.title,
-    localeProp: localeProp,
-    activeLocale: activeLocale,
-    accentColor: gigPack.accent_color,
-    posterSkin: gigPack.poster_skin,
-    heroImageUrl: gigPack.hero_image_url,
-    bandLogoUrl: gigPack.band_logo_url,
-    hasLineup: !!gigPack.lineup,
-    hasSchedule: !!gigPack.schedule,
-    hasMaterials: !!gigPack.materials,
-    hasPackingChecklist: !!gigPack.packing_checklist
-  });
 
   const t = useTranslations("public");
   const [setlistExpanded, setSetlistExpanded] = useState(false);
@@ -55,15 +41,11 @@ export function MinimalLayout({ gigPack, openMaps, slug, locale: localeProp }: M
   } as React.CSSProperties : {};
 
   // Determine background image (hero or fallback)
-  console.log("[MinimalLayout] Determining background image...");
   let backgroundImage;
   try {
     const classifiedTheme = classifyGigVisualTheme({ gig: gigPack as GigPack });
-    console.log("[MinimalLayout] Classified theme:", classifiedTheme, "for gigId:", gigPack.id);
     backgroundImage = gigPack.hero_image_url || pickFallbackImageForTheme(classifiedTheme, gigPack.id);
-    console.log("[MinimalLayout] Background image:", backgroundImage);
   } catch (error) {
-    console.error("[MinimalLayout] Error determining background image:", error);
     backgroundImage = "/gig-fallbacks/generic-1.jpeg"; // Fallback
   }
 

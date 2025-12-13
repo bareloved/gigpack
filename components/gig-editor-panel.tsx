@@ -123,8 +123,6 @@ export interface GigEditorPanelProps {
   userTemplates?: UserTemplate[];
   /** Callback to reload user templates */
   onUserTemplatesChange?: () => void;
-  /** Whether user templates are loading */
-  isLoadingUserTemplates?: boolean;
 }
 
 // ============================================================================
@@ -260,7 +258,6 @@ export function GigEditorPanel({
   onDelete,
   onTemplateSaved,
   userTemplates = [],
-  isLoadingUserTemplates = false,
 }: GigEditorPanelProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -307,6 +304,16 @@ export function GigEditorPanel({
     return list[Math.floor(Math.random() * list.length)];
   };
 
+  // Helper to sort schedule items by time (nulls at end)
+  const sortScheduleByTime = (items: GigScheduleItem[]) => {
+    return items.sort((a, b) => {
+      if (!a.time && !b.time) return 0;
+      if (!a.time) return 1;
+      if (!b.time) return -1;
+      return a.time.localeCompare(b.time);
+    });
+  };
+
   // Active tab
   const [activeTab, setActiveTab] = useState("schedule");
 
@@ -338,7 +345,6 @@ export function GigEditorPanel({
   const [dressCode, setDressCode] = useState(gigPack?.dress_code || "");
   const [backlineNotes, setBacklineNotes] = useState(gigPack?.backline_notes || "");
   const [parkingNotes, setParkingNotes] = useState(gigPack?.parking_notes || "");
-  const [generalNotes, setGeneralNotes] = useState("");
   const [paymentNotes, setPaymentNotes] = useState(gigPack?.payment_notes || "");
   const [internalNotes, setInternalNotes] = useState(gigPack?.internal_notes || "");
   const [theme, setTheme] = useState<GigPackTheme>((gigPack?.theme || "minimal") as GigPackTheme);
@@ -373,7 +379,6 @@ export function GigEditorPanel({
   const [showDressCode, setShowDressCode] = useState(!!gigPack?.dress_code);
   const [showBackline, setShowBackline] = useState(!!gigPack?.backline_notes);
   const [showParking, setShowParking] = useState(!!gigPack?.parking_notes);
-  const [showGeneralNotes, setShowGeneralNotes] = useState(false);
   const [showInternalNotes, setShowInternalNotes] = useState(!!gigPack?.internal_notes);
 
   // Apply a template to the form (resets fields with template values)
@@ -560,16 +565,20 @@ export function GigEditorPanel({
     }
   };
 
-  // Image upload handlers
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploadingLogo(true);
+  // Image upload/remove helpers
+  const uploadImageToState = async (
+    file: File,
+    currentUrl: string,
+    setUrl: (url: string) => void,
+    setUploading: (uploading: boolean) => void,
+    successMessage: string,
+    errorLogPrefix: string
+  ) => {
+    setUploading(true);
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         toast({
           title: tCommon("error"),
@@ -579,7 +588,7 @@ export function GigEditorPanel({
         return;
       }
 
-      const oldPath = bandLogoUrl ? getPathFromUrl(bandLogoUrl) : undefined;
+      const oldPath = currentUrl ? getPathFromUrl(currentUrl) : undefined;
       const result = await uploadImage(file, user.id, oldPath || undefined);
 
       if ("error" in result) {
@@ -589,91 +598,64 @@ export function GigEditorPanel({
           variant: "destructive",
         });
       } else {
-        setBandLogoUrl(result.url);
+        setUrl(result.url);
         toast({
           title: t("uploadImage"),
-          description: "Logo uploaded successfully",
+          description: successMessage,
           duration: 2000,
         });
       }
     } catch (error) {
-      console.error("Error uploading logo:", error);
+      console.error(`${errorLogPrefix}:`, error);
       toast({
         title: tCommon("error"),
         description: t("imageUploadError"),
         variant: "destructive",
       });
     } finally {
-      setIsUploadingLogo(false);
+      setUploading(false);
     }
+  };
+
+  const removeImageFromState = async (currentUrl: string, setUrl: (url: string) => void) => {
+    if (currentUrl) {
+      const path = getPathFromUrl(currentUrl);
+      if (path) {
+        await deleteImage(path);
+      }
+      setUrl("");
+    }
+  };
+
+  // Image upload handlers
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadImageToState(
+      file,
+      bandLogoUrl,
+      setBandLogoUrl,
+      setIsUploadingLogo,
+      "Logo uploaded successfully",
+      "Error uploading logo"
+    );
   };
 
   const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    setIsUploadingHero(true);
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: tCommon("error"),
-          description: tAuth("mustBeLoggedIn"),
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const oldPath = heroImageUrl ? getPathFromUrl(heroImageUrl) : undefined;
-      const result = await uploadImage(file, user.id, oldPath || undefined);
-
-      if ("error" in result) {
-        toast({
-          title: tCommon("error"),
-          description: result.error,
-          variant: "destructive",
-        });
-      } else {
-        setHeroImageUrl(result.url);
-        toast({
-          title: t("uploadImage"),
-          description: "Hero image uploaded successfully",
-          duration: 2000,
-        });
-      }
-    } catch (error) {
-      console.error("Error uploading hero image:", error);
-      toast({
-        title: tCommon("error"),
-        description: t("imageUploadError"),
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploadingHero(false);
-    }
+    await uploadImageToState(
+      file,
+      heroImageUrl,
+      setHeroImageUrl,
+      setIsUploadingHero,
+      "Hero image uploaded successfully",
+      "Error uploading hero image"
+    );
   };
 
-  const handleRemoveLogo = async () => {
-    if (bandLogoUrl) {
-      const path = getPathFromUrl(bandLogoUrl);
-      if (path) {
-        await deleteImage(path);
-      }
-      setBandLogoUrl("");
-    }
-  };
-
-  const handleRemoveHero = async () => {
-    if (heroImageUrl) {
-      const path = getPathFromUrl(heroImageUrl);
-      if (path) {
-        await deleteImage(path);
-      }
-      setHeroImageUrl("");
-    }
-  };
+  const handleRemoveLogo = () => removeImageFromState(bandLogoUrl, setBandLogoUrl);
+  const handleRemoveHero = () => removeImageFromState(heroImageUrl, setHeroImageUrl);
 
   // Submit handler
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -830,14 +812,7 @@ export function GigEditorPanel({
   // Handle paste schedule confirmation
   const handlePasteScheduleConfirm = (newItems: GigScheduleItem[]) => {
     // Add new items to existing schedule and sort by time
-    const updatedSchedule = [...schedule, ...newItems].sort((a, b) => {
-      // Sort by time, nulls at end
-      if (!a.time && !b.time) return 0;
-      if (!a.time) return 1;
-      if (!b.time) return -1;
-      return a.time.localeCompare(b.time);
-    });
-
+    const updatedSchedule = sortScheduleByTime([...schedule, ...newItems]);
     setSchedule(updatedSchedule);
   };
 
@@ -1252,15 +1227,7 @@ export function GigEditorPanel({
 
                     {/* Schedule Items */}
                     <div className="space-y-3">
-                      {schedule
-                        .sort((a, b) => {
-                          // Sort by time, nulls at end
-                          if (!a.time && !b.time) return 0;
-                          if (!a.time) return 1;
-                          if (!b.time) return -1;
-                          return a.time.localeCompare(b.time);
-                        })
-                        .map((item, index) => (
+                      {sortScheduleByTime([...schedule]).map((item, index) => (
                           <div key={item.id} className="flex flex-col gap-2 sm:flex-row sm:items-center p-2 rounded-md border bg-background">
                             {/* Time Picker */}
                             <div className="w-[80px]">
@@ -1351,37 +1318,6 @@ export function GigEditorPanel({
                 {/* Info/Logistics Tab */}
                 {activeTab === "info" && (
                   <div className="space-y-4">
-                    {/* General Information */}
-                    {showGeneralNotes && (
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <label className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-                            <FileText className="h-4 w-4" />
-                            {t("generalInformation")}
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setGeneralNotes("");
-                              setShowGeneralNotes(false);
-                            }}
-                            disabled={isLoading}
-                            className="text-[11px] text-muted-foreground hover:text-destructive transition-colors"
-                          >
-                            {t("materials.remove")}
-                          </button>
-                        </div>
-                        <Textarea
-                          value={generalNotes}
-                          onChange={(e) => setGeneralNotes(e.target.value)}
-                          placeholder={t("generalInformationPlaceholder")}
-                          rows={3}
-                          disabled={isLoading}
-                          className="resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:ring-1 focus:ring-ring"
-                        />
-                      </div>
-                    )}
-
                     {/* Dress Code */}
                     {showDressCode && (
                       <div className="space-y-1">
@@ -1513,20 +1449,6 @@ export function GigEditorPanel({
 
                     {/* Add buttons for hidden fields */}
                     <div className="space-y-2">
-                      {!showGeneralNotes && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowGeneralNotes(true)}
-                          disabled={isLoading}
-                          className="w-full justify-start text-xs"
-                        >
-                          <Plus className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
-                          <FileText className="mr-1.5 h-3.5 w-3.5 rtl:ml-1.5 rtl:mr-0" />
-                          {t("generalInformation")}
-                        </Button>
-                      )}
                       {!showDressCode && (
                         <Button
                           type="button"

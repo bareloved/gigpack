@@ -755,7 +755,6 @@ export function GigPacksClientPage({
         onTemplateSaved={loadUserTemplates}
         userTemplates={userTemplates}
         onUserTemplatesChange={loadUserTemplates}
-        isLoadingUserTemplates={isLoadingUserTemplates}
       />
 
       {/* Share Dialog */}

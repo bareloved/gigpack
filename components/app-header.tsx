@@ -129,11 +129,5 @@ export function AppHeader({ user }: AppHeaderProps) {
   );
 }
 
-// Hook for navigation loading state
-export const useNavigationLoading = () => {
-  const [isNavigating, setIsNavigating] = useState(false);
-
-  return { isNavigating, setIsNavigating };
-};
 
 
